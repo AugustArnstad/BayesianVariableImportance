@@ -183,7 +183,7 @@ plot_posteriors_and_heritability <- function(model, random_effect_name = NULL) {
   return(list(variance_plot = p1, heritability_plot = p2))
 }
 
-sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=NULL, param_of_interest=NULL, distribution_var=0, kuk=NULL) {
+sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=NULL, param_of_interest=NULL, distribution_var=0) {
 
   # Make sure its correct with distributional variance
   # Make the param_of_interest a general input object for all functions. That was a nice way to put it
@@ -266,8 +266,8 @@ sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=N
 
     beta <- samps_Z[[i]]$latent[(samples_tot+2):output_length]  #Skip intercept
     beta_mat[i, ] <- beta
-    scaled_beta <- beta/scale_const
-    scaled_beta_mat[i, ] <- scaled_beta
+    #scaled_beta <- beta/scale_const
+    #scaled_beta_mat[i, ] <- scaled_beta
     importance_mat[i, ] <- lambda^2 %*% beta^2
     #scaled_importance_mat[i, ] <- lambda^2 %*% scaled_beta^2
 
@@ -276,6 +276,7 @@ sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=N
 
   rowsum <- rowSums(random_mat) + rowSums(importance_mat)
   scaled_random_mat <- random_mat/rowsum
+  scaled_beta_mat <- beta_mat/rowsum
   scaled_importance_mat <- importance_mat/rowsum
 
   # Do not think these are correct!!!!! They do not contain the guassian observations for example.
