@@ -1,9 +1,9 @@
 Package: VariableImportanceINLA
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Variable importance for (G)LMMs using INLA
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
+Author: August Arnstad
+Maintainer: August Arnstad, augustarnstad@gmail.com
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: What license is it under?
@@ -14,4 +14,5 @@ Depends:
 Imports: 
     INLA,
     ggplot2,
-    reshape2
+    reshape2,
+    tidyr
