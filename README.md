@@ -23,31 +23,16 @@ devtools::install_github("AugustArnstad/VariableImportanceINLA")
 ``` 
 
 ## Usage
-To compute the Bayesian variable importance for your GLMMs, follow the basic structure:
 
-```{r}
-set.seed(1234)
-model <- run_bayesian_imp(Y ~ V2 + V3 + (1 | gamma) + (1 | eta), data=data_bayes)
-
-posteriors <- sample_posteriors(Y ~ V2 + V3 + V4 + (1 | gamma) + (1 | eta), data=data_bayes, 5000, n, n_classes=200)
-
-gelman_r2 = gelman_r2_metrics(model, s=1000, plot=TRUE)
-gelman_r2$plot
-summary(gelman_r2$conditional_gelman_r2)
-```
-where all functions are found and documented in the R folder.
-A basic example of how one can fit and treat correlated predictors are found under the files posterior_sampling.Rmd and posterior_sampling.pdf
 
 ## Simulation study
-In the folder simulation study, we have four files, that contribute to a simulation study where the Bayesian Importance method is compared to other, frequentist and more established, methods in the field of mathematics. Simulation study preparation.Rmd and Simulation study.Rmd are drafts mostly made for how one should do the simulation study and can be viewed as redundant. Simulation run.Rmd contains the code that runs the simulation study and writes the results to the attached csv files. Simulation study analysis.Rmd contains analysis of the resulting files, which is done by violin plots and tables to compare the Bayesian Importance package with other methods that are established in the mathematical field.
 
-The analysis pdf is also attached so one can see how the analysis is done.
 
 ## Documentation
 Further documentation and function references can be found within the package. Use the standard R help and documentation commands to access detailed information about each function.
 
 ## Contributing
-Contributions to `BayesianImportance` are welcome. Please ensure that you adhere to standard coding practices and include tests for any new features. Open a pull request with details about your changes.
+Contributions to `VariableImportanceINLA` are welcome. Please ensure that you adhere to standard coding practices and include tests for any new features. Open a pull request with details about your changes.
 
 ## License
 This project is licensed under the MIT License - see the LICENSE.txt file for details
