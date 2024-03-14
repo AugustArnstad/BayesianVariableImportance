@@ -12,3 +12,5 @@ export(plot_samples)
 # Imported functions
 importFrom(ggplot2, ggplot, geom_histogram, geom_density, geom_line, aes, theme_minimal, labs, theme, scale_fill_brewer)
 importFrom(INLA, inla, inla.posterior.sample)
+importFrom(reshape2, melt)
+importFrom(tidyr, pivot_longer)
