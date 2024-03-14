@@ -1,1 +1,57 @@
 # VariableImportanceINLA
+**Bayesian Variable Importance for GLMMs using INLA**
+This is a package developed for my masters thesis at NTNU. It is a further developement of a previous package BayesianImportance, available in full at https://github.com/AugustArnstad/BayesianImportance.
+
+`VariableImportanceINLA` is an R package designed to compute Bayesian variable importance metrics for Generalized Linear Mixed Models (GLMMs) utilizing the Integrated Nested Laplace Approximation (INLA) methodology.
+
+## Features
+- **Bayesian Variable Importance Computation**: Allows for the quantification of the importance of predictors in GLMMs in a Bayesian framework. Currently it only works with LMM's but this is thought to be extended in the near future.
+- **INLA Integration**: Leverages the computational advantages of INLA, a popular method for Bayesian inference for latent Gaussian models.
+- **Support for Various GLMMs**: Compatible with a wide range of generalized linear mixed models.
+- **Extensible**: Designed with the modern R user in mind, offering a range of utilities to further expand upon the base functionality.
+- **Priors**: As of right now it uses the default priors that INLA provides. Adding user specified priors is perhaps the most desirable extension.
+
+## Installation
+To install the latest version of `VariableImportanceINLA` from GitHub you need INLA. You can therefore use the following command:
+```R
+install.packages("INLA", repos = c(getOption("repos"), INLA = "https://inla.r-inla-download.org/R/stable"), dep = TRUE)
+
+# If not already installed, install the 'devtools' package
+if(!require(devtools)) install.packages("devtools")
+# Install BayesianImportance
+devtools::install_github("AugustArnstad/VariableImportanceINLA")
+``` 
+
+## Usage
+To compute the Bayesian variable importance for your GLMMs, follow the basic structure:
+
+```{r}
+set.seed(1234)
+model <- run_bayesian_imp(Y ~ V2 + V3 + (1 | gamma) + (1 | eta), data=data_bayes)
+
+posteriors <- sample_posteriors(Y ~ V2 + V3 + V4 + (1 | gamma) + (1 | eta), data=data_bayes, 5000, n, n_classes=200)
+
+gelman_r2 = gelman_r2_metrics(model, s=1000, plot=TRUE)
+gelman_r2$plot
+summary(gelman_r2$conditional_gelman_r2)
+```
+where all functions are found and documented in the R folder.
+A basic example of how one can fit and treat correlated predictors are found under the files posterior_sampling.Rmd and posterior_sampling.pdf
+
+## Simulation study
+In the folder simulation study, we have four files, that contribute to a simulation study where the Bayesian Importance method is compared to other, frequentist and more established, methods in the field of mathematics. Simulation study preparation.Rmd and Simulation study.Rmd are drafts mostly made for how one should do the simulation study and can be viewed as redundant. Simulation run.Rmd contains the code that runs the simulation study and writes the results to the attached csv files. Simulation study analysis.Rmd contains analysis of the resulting files, which is done by violin plots and tables to compare the Bayesian Importance package with other methods that are established in the mathematical field.
+
+The analysis pdf is also attached so one can see how the analysis is done.
+
+## Documentation
+Further documentation and function references can be found within the package. Use the standard R help and documentation commands to access detailed information about each function.
+
+## Contributing
+Contributions to `BayesianImportance` are welcome. Please ensure that you adhere to standard coding practices and include tests for any new features. Open a pull request with details about your changes.
+
+## License
+This project is licensed under the MIT License - see the LICENSE.txt file for details
+
+## Acknowledgements
+INLA team for their outstanding work on the INLA methodology and R package.
+My counsellor Stefanie Muff, Associate Professor, Department of Mathematical Sciences, NTNU Trondheim
