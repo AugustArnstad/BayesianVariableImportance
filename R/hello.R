@@ -10,6 +10,19 @@ if (!requireNamespace("INLA", quietly = TRUE)) {
 library(INLA)
 
 
+
+#' Singular Value Decomposition (SVD) and Scaling
+#'
+#' Performs singular value decomposition on a numeric matrix and scales the data.
+#' Non-numeric columns are converted to numeric by treating factors and characters appropriately.
+#'
+#' @param X A data frame or matrix with numeric and possibly non-numeric columns.
+#' @return A list containing the SVD transformed matrix `Z`, the rotation matrix `R`,
+#'         and the scaling factors `lambda`.
+#' @examples
+#' data(mtcars)
+#' result <- SVD_decomp(mtcars)
+#' @export
 SVD_decomp <- function(X){
 
   for (col in colnames(X)) {
@@ -42,6 +55,18 @@ SVD_decomp <- function(X){
   return(list(Z = Z, R = R, lambda = lambda))
 }
 
+
+#' Extract Fixed and Random Effects from a Model Formula
+#'
+#' Identifies and separates fixed and random effects specified in a model formula.
+#'
+#' @param formula A model formula.
+#' @return A list with two elements: `fixed_effects` and `random_effects`,
+#'         each containing the names of the respective effects extracted from the formula.
+#' @examples
+#' formula <- y ~ x + f(group, model = "iid")
+#' effects <- extract_effects(formula)
+#' @export
 extract_effects <- function(formula) {
   # Get the terms object from the formula
   formula_terms <- terms(formula)
@@ -75,7 +100,22 @@ extract_effects <- function(formula) {
   return(list(fixed_effects = fixed_effects, random_effects = random_effects))
 }
 
-# Function to perform analysis with INLA
+
+#' Perform INLA Analysis on Specified Data and Formula
+#'
+#' Fits a model using the INLA approach, accommodating both fixed and random effects as specified.
+#' The function handles preprocessing such as SVD decomposition and scaling.
+#'
+#' @param data The dataset to be analyzed.
+#' @param formula The formula specifying the model to be fitted.
+#' @param family The model family (e.g., "binomial", "poisson").
+#' @param priors Optional list of prior specifications for model parameters.
+#' @return An object of class `inla` representing the fitted model.
+#' @examples
+#' data <- data_binomial # Assuming data_binomial is available
+#' formula <- y ~ x + f(group, model = "iid")
+#' result <- perform_inla_analysis(data, formula, family = "binomial")
+#' @export
 perform_inla_analysis <- function(data, formula, family, priors = NULL) {
 
   data_copy <- data
@@ -131,58 +171,22 @@ perform_inla_analysis <- function(data, formula, family, priors = NULL) {
   return(inla_result)
 }
 
-plot_posteriors_and_heritability <- function(model, random_effect_name = NULL) {
-  # Calculate marginals for variance components
-  variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
-
-  # Create data frames for plotting
-  df_list <- lapply(names(variance_marginals_list), function(effect_name) {
-    data.frame(
-      x = variance_marginals_list[[effect_name]][, 1],
-      y = variance_marginals_list[[effect_name]][, 2],
-      Effect = effect_name
-    )
-  })
-  df_combined <- do.call(rbind, df_list)
-
-  df_combined$Effect <- gsub("Precision for ", "", df_combined$Effect, fixed = TRUE)
-
-  # Plot posterior distributions
-  p1 <- ggplot(df_combined, aes(x = x, y = y, color = Effect)) +
-    geom_line() +
-    labs(title = "Posterior Distributions of Variance Components",
-         x = "Variance", y = "Density") +
-    theme_minimal() +
-    theme(legend.position = "right")
-
-  # Plot heritability if random effect name is provided and correctly calculate heritability
-  if (!is.null(random_effect_name) && random_effect_name %in% names(variance_marginals_list)) {
-    # Calculate heritability distribution
-    names <- names(model$marginals.hyperpar)
-    total <- rep(0, length(variance_marginals_list[[random_effect_name]]))
-    for (name in names){
-      total <- total + variance_marginals_list[[name]][, 1]
-    }
-
-    heritability <- variance_marginals_list[[random_effect_name]][, 1]/total
-
-    heritability_density <- variance_marginals_list[[random_effect_name]][ ,2]
-
-    df_heritability <- data.frame(Heritability = heritability, Density = heritability_density)
-
-    p2 <- ggplot(df_heritability, aes(x = Heritability, y = Density)) +
-      geom_line() +
-      labs(title = paste("Heritability Distribution for", random_effect_name),
-           x = "Heritability", y = "Density") +
-      theme_minimal()
-  } else {
-    p2 <- NULL
-  }
-
-
-  return(list(variance_plot = p1, heritability_plot = p2))
-}
-
+#' Sample Posterior Distributions for Model Parameters
+#'
+#' Samples from the posterior distributions of model parameters and computes derived quantities.
+#'
+#' @param model The fitted model object from INLA.
+#' @param formula The model formula.
+#' @param data The data used for fitting the model.
+#' @param n_samp Number of samples to draw from the posterior distributions.
+#' @param additive_param Optional; specifies an additive parameter for which to compute heritability.
+#' @param param_of_interest Optional; specifies parameters of interest for detailed sampling.
+#' @param distribution_var Optional; a variance component to be added to the model distributions.
+#' @return A list containing matrices and data frames of sampled values and derived quantities.
+#' @examples
+#' # Assuming 'result' is an inla model object and 'data_binomial' is available
+#' samples <- sample_posterior(result, formula, data_binomial, n_samp = 100)
+#' @export
 sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=NULL, param_of_interest=NULL, distribution_var=0) {
 
   # Make sure its correct with distributional variance
@@ -331,6 +335,18 @@ sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=N
               heritability = h2_mat))
 }
 
+
+#' Plot Samples from Posterior Distributions
+#'
+#' Generates plots for the scaled importance of fixed and random effects,
+#' as well as marginal and conditional R2 values from sampled posterior distributions.
+#'
+#' @param samples A list object containing sampled values and derived quantities from `sample_posterior`.
+#' @return A list of ggplot objects for each of the plotted quantities.
+#' @examples
+#' # Assuming 'samples' contains results from `sample_posterior`
+#' plots <- plot_samples(samples)
+#' @export
 plot_samples <- function(samples) {
   plots <- list() # Initialize an empty list to store plots
 
@@ -397,5 +413,67 @@ plot_samples <- function(samples) {
 }
 
 
+#' Plot Posterior Distributions of Variance Components and Heritability
+#'
+#' Generates plots for the posterior distributions of variance components and, optionally, heritability.
+#'
+#' @param model An `inla` model object.
+#' @param random_effect_name Optional name of the random effect for which heritability is to be plotted.
+#' @return A list of plot objects: `variance_plot` for variance components and `heritability_plot` for heritability.
+#' @examples
+#' # Assuming 'result' is an inla model object
+#' plots <- plot_posteriors_and_heritability(result, random_effect_name = "group")
+#' @export
+plot_posteriors_and_heritability <- function(model, random_effect_name = NULL) {
+  # Calculate marginals for variance components
+  variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
+
+  # Create data frames for plotting
+  df_list <- lapply(names(variance_marginals_list), function(effect_name) {
+    data.frame(
+      x = variance_marginals_list[[effect_name]][, 1],
+      y = variance_marginals_list[[effect_name]][, 2],
+      Effect = effect_name
+    )
+  })
+  df_combined <- do.call(rbind, df_list)
+
+  df_combined$Effect <- gsub("Precision for ", "", df_combined$Effect, fixed = TRUE)
+
+  # Plot posterior distributions
+  p1 <- ggplot(df_combined, aes(x = x, y = y, color = Effect)) +
+    geom_line() +
+    labs(title = "Posterior Distributions of Variance Components",
+         x = "Variance", y = "Density") +
+    theme_minimal() +
+    theme(legend.position = "right")
+
+  # Plot heritability if random effect name is provided and correctly calculate heritability
+  if (!is.null(random_effect_name) && random_effect_name %in% names(variance_marginals_list)) {
+    # Calculate heritability distribution
+    names <- names(model$marginals.hyperpar)
+    total <- rep(0, length(variance_marginals_list[[random_effect_name]]))
+    for (name in names){
+      total <- total + variance_marginals_list[[name]][, 1]
+    }
+
+    heritability <- variance_marginals_list[[random_effect_name]][, 1]/total
+
+    heritability_density <- variance_marginals_list[[random_effect_name]][ ,2]
+
+    df_heritability <- data.frame(Heritability = heritability, Density = heritability_density)
+
+    p2 <- ggplot(df_heritability, aes(x = Heritability, y = Density)) +
+      geom_line() +
+      labs(title = paste("Heritability Distribution for", random_effect_name),
+           x = "Heritability", y = "Density") +
+      theme_minimal()
+  } else {
+    p2 <- NULL
+  }
+
+
+  return(list(variance_plot = p1, heritability_plot = p2))
+}
 
 
