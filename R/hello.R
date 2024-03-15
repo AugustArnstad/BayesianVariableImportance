@@ -336,7 +336,7 @@ sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=N
 }
 
 
-sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_param=NULL, param_of_interest=NULL, distribution_var=0) {
+sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_param=NULL, param_of_interest=NULL) {
 
   # Make sure its correct with distributional variance
   # Make the param_of_interest a general input object for all functions. That was a nice way to put it
@@ -351,7 +351,11 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
   effects <- extract_effects(formula)
   fixed <- effects$fixed_effects
 
+  fam <- model$.args$family
 
+  link <- model$.args$control.family[[1]]$link
+
+  distribution = paste0("Distributional variance: ", link)
 
   response <- all.vars(formula)[1]
 
@@ -359,6 +363,8 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
   random <- names(variance_marginals_list)
   random <- gsub("Precision for the ", "", random)
   random <- gsub("Precision for ", "", random)
+
+  random <- c(distribution, random)
 
   beta_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
   scaled_beta_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
@@ -388,7 +394,6 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
 
   not_na = which(!is.na(data[response]))
 
-  print(random)
 
   for (i in 1:n_samp){
     # Extract all sampled values, separate them by covariate/predictor, and assign them to the sampled matrix
@@ -397,15 +402,28 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
     predictor_names <- grep(predictor, latent_row_names, value = TRUE)
     predictor_samples <- samps_Z[[i]]$latent[predictor_names, , drop = FALSE]
     samples_tot <- length(predictor_samples)
-    #print(predictor_samples)
-    #gaussian <- data[[response]][not_na] - predictor_samples[not_na]
-    #var_pred_mat[i] <- var(predictor_samples)
-    #random_mat[i, 1] <- var(gaussian)
+
+    if (fam == "binomial"){
+      if (link == "probit"){
+        distribution_var <- 1
+      } else if (link == "logit"){
+        distribution_var <- pi^2/3
+      }
+    }else if (fam == "poisson"){
+      if (link == "log"){
+        intercept <- samps_Z[[i]]$latent[output_length-length(fixed)]
+        distribution_var <- log((1/exp(intercept)) + 1)
+      }else if (link == "root"){
+        distribution_var <- 0.25
+      }
+    }
 
 
+    random_mat[i, 1] <- distribution_var
 
-    if (length(random)>0){
-      for (j in 1:length(random)){
+
+    if (length(random)>1){
+      for (j in 2:length(random)){
         pattern <- paste0("^", random[j], ":")
         random_names <- grep(pattern, latent_row_names, value = TRUE)
         random_samples <- samps_Z[[i]]$latent[random_names, , drop = FALSE]
@@ -430,7 +448,7 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
 
   }
 
-  rowsum <- rowSums(random_mat) + rowSums(importance_mat) + distribution_var
+  rowsum <- rowSums(random_mat) + rowSums(importance_mat) #+ distribution_var
   scaled_random_mat <- random_mat/rowsum
   scaled_beta_mat <- beta_mat/rowsum
   scaled_importance_mat <- importance_mat/rowsum
@@ -438,15 +456,16 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
   # Do not think these are correct!!!!! They do not contain the guassian observations for example.
   # Could possibly use the variance of the predictor as the measure
 
-  R2_mat <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat) + distribution_var)
+  R2_mat <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat))# + distribution_var)
 
-  if (length(random)>1){
-    R2_cond <- (rowSums(importance_mat) + rowSums(random_mat)) / (rowSums(importance_mat) + rowSums(random_mat) + distribution_var)
-  }else if (length(random)==1){
-    R2_cond <- (rowSums(importance_mat) + random_mat ) / (rowSums(importance_mat) + rowSums(random_mat) + distribution_var)
+  if (length(random)>2){
+    R2_cond <- (rowSums(importance_mat) + rowSums(random_mat[, -1])) / (rowSums(importance_mat) + rowSums(random_mat)) # + distribution_var)
+  }else if (length(random)==2){
+    R2_cond <- (rowSums(importance_mat) + random_mat[, -1] ) / (rowSums(importance_mat) + rowSums(random_mat)) # + distribution_var)
   }else{
-    R2_cond <- rowSums(importance_mat)  / (rowSums(importance_mat) + rowSums(random_mat) + distribution_var)
+    R2_cond <- rowSums(importance_mat)  / (rowSums(importance_mat) + rowSums(random_mat)) # + distribution_var)
   }
+
 
 
   beta_mat <- as.data.frame(beta_mat)
@@ -488,7 +507,6 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
 }
 
 
-
 #' Plot Samples from Posterior Distributions
 #'
 #' Generates plots for the scaled importance of fixed and random effects,
@@ -504,7 +522,7 @@ plot_samples <- function(samples) {
   plots <- list() # Initialize an empty list to store plots
 
   # Check and plot scaled importance for fixed effects
-  if (!is.null(samples$scaled_importance_samples)) {
+  if (!is.null(samples$scaled_importance_samples) && dim(samples$scaled_importance_samples)[2] > 0) {
     melted_scaled_importance <- melt(as.data.frame(samples$scaled_importance_samples))
     fixed_effects_plot <- ggplot(melted_scaled_importance, aes(x = value)) +
       geom_histogram(aes(y = ..density..), fill = "blue", alpha = 0.5) +
