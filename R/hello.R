@@ -171,7 +171,7 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", p
   return(inla_result)
 }
 
-#' Sample Posterior Distributions for Model Parameters
+#' Sample Posterior Distributions for Model Parameters Gaussian responses
 #'
 #' Samples from the posterior distributions of model parameters and computes derived quantities.
 #'
@@ -181,28 +181,22 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", p
 #' @param n_samp Number of samples to draw from the posterior distributions.
 #' @param additive_param Optional; specifies an additive parameter for which to compute heritability.
 #' @param param_of_interest Optional; specifies parameters of interest for detailed sampling.
-#' @param distribution_var Optional; a variance component to be added to the model distributions.
 #' @return A list containing matrices and data frames of sampled values and derived quantities.
 #' @examples
 #' # Assuming 'result' is an inla model object and 'data_binomial' is available
 #' samples <- sample_posterior(result, formula, data_binomial, n_samp = 100)
 #' @export
-sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=NULL, param_of_interest=NULL, distribution_var=0) {
+sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additive_param=NULL, param_of_interest=NULL) {
 
-  # Make sure its correct with distributional variance
   # Make the param_of_interest a general input object for all functions. That was a nice way to put it
-  # Scaling not complete
 
 
   response <- all.vars(formula)[1]
   scaled_response <- scale(data[, response])
   scale_const <- attr(scaled_response, 'scaled:scale')
 
-  #fixed <- model$names.fixed[2:length(model$names.fixed)]
   effects <- extract_effects(formula)
   fixed <- effects$fixed_effects
-
-
 
   response <- all.vars(formula)[1]
 
@@ -239,7 +233,6 @@ sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=N
 
   not_na = which(!is.na(data[response]))
 
-
   for (i in 1:n_samp){
     # Extract all sampled values, separate them by covariate/predictor, and assign them to the sampled matrix
     samples_length <- 0
@@ -247,7 +240,7 @@ sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=N
     predictor_names <- grep(predictor, latent_row_names, value = TRUE)
     predictor_samples <- samps_Z[[i]]$latent[predictor_names, , drop = FALSE]
     samples_tot <- length(predictor_samples)
-    #print(predictor_samples)
+
     gaussian <- data[[response]][not_na] - predictor_samples[not_na]
     var_pred_mat[i] <- var(predictor_samples)
     random_mat[i, 1] <- var(gaussian)
@@ -270,10 +263,7 @@ sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=N
 
     beta <- samps_Z[[i]]$latent[(samples_tot+2):output_length]  #Skip intercept
     beta_mat[i, ] <- beta
-    #scaled_beta <- beta/scale_const
-    #scaled_beta_mat[i, ] <- scaled_beta
     importance_mat[i, ] <- lambda^2 %*% beta^2
-    #scaled_importance_mat[i, ] <- lambda^2 %*% scaled_beta^2
 
 
   }
@@ -283,19 +273,15 @@ sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=N
   scaled_beta_mat <- beta_mat/rowsum
   scaled_importance_mat <- importance_mat/rowsum
 
-  # Do not think these are correct!!!!! They do not contain the guassian observations for example.
-  # Could possibly use the variance of the predictor as the measure
-
-  R2_mat <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat) + distribution_var)
+  R2_mat <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat))
 
   if (length(random)>2){
-    R2_cond <- (rowSums(importance_mat) + rowSums(random_mat[, -1]) + distribution_var) / (rowSums(importance_mat) + rowSums(random_mat) + distribution_var)
+    R2_cond <- (rowSums(importance_mat) + rowSums(random_mat[, -1])) / (rowSums(importance_mat) + rowSums(random_mat))
   } else if (length(random)==2){
-    R2_cond <- (rowSums(importance_mat) + random_mat[, -1] + distribution_var) / (rowSums(importance_mat) + rowSums(random_mat) + distribution_var)
+    R2_cond <- (rowSums(importance_mat) + random_mat[, -1]) / (rowSums(importance_mat) + rowSums(random_mat))
   }else{
-    R2_cond <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat) + distribution_var)
+    R2_cond <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat))
   }
-
 
   beta_mat <- as.data.frame(beta_mat)
   names(beta_mat) <- fixed
@@ -322,7 +308,6 @@ sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=N
     names(h2_mat) <- paste0("Heritability of: ", additive_param)
   }
 
-
   return(list(beta_samples = beta_mat,
               importance_samples = importance_mat,
               scaled_beta_samples = scaled_beta_mat,
@@ -336,18 +321,29 @@ sample_posterior <- function(model, formula, data, n_samp=1000, additive_param=N
 }
 
 
+#' Sample Posterior Distributions for Model Parameters for non-Gaussian responses (no error distribution)
+#'
+#' Samples from the posterior distributions of model parameters and computes derived quantities.
+#'
+#' @param model The fitted model object from INLA.
+#' @param formula The model formula.
+#' @param data The data used for fitting the model.
+#' @param n_samp Number of samples to draw from the posterior distributions.
+#' @param additive_param Optional; specifies an additive parameter for which to compute heritability.
+#' @param param_of_interest Optional; specifies parameters of interest for detailed sampling.
+#' @return A list containing matrices and data frames of sampled values and derived quantities.
+#' @examples
+#' # Assuming 'result' is an inla model object and 'data_binomial' is available
+#' samples <- sample_posterior(result, formula, data_binomial, n_samp = 100)
+#' @export
 sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_param=NULL, param_of_interest=NULL) {
 
-  # Make sure its correct with distributional variance
   # Make the param_of_interest a general input object for all functions. That was a nice way to put it
-  # Scaling not complete
-
 
   response <- all.vars(formula)[1]
   scaled_response <- scale(data[, response])
   scale_const <- attr(scaled_response, 'scaled:scale')
 
-  #fixed <- model$names.fixed[2:length(model$names.fixed)]
   effects <- extract_effects(formula)
   fixed <- effects$fixed_effects
 
@@ -394,7 +390,6 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
 
   not_na = which(!is.na(data[response]))
 
-
   for (i in 1:n_samp){
     # Extract all sampled values, separate them by covariate/predictor, and assign them to the sampled matrix
     samples_length <- 0
@@ -418,9 +413,7 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
       }
     }
 
-
     random_mat[i, 1] <- distribution_var
-
 
     if (length(random)>1){
       for (j in 2:length(random)){
@@ -438,35 +431,24 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
     }
 
     beta <- samps_Z[[i]]$latent[(samples_tot+2):output_length]  #Skip intercept
-    #print(beta)
     beta_mat[i, ] <- beta
-    #scaled_beta <- beta/scale_const
-    #scaled_beta_mat[i, ] <- scaled_beta
     importance_mat[i, ] <- lambda^2 %*% beta^2
-    #scaled_importance_mat[i, ] <- lambda^2 %*% scaled_beta^2
-
-
   }
 
-  rowsum <- rowSums(random_mat) + rowSums(importance_mat) #+ distribution_var
+  rowsum <- rowSums(random_mat) + rowSums(importance_mat)
   scaled_random_mat <- random_mat/rowsum
   scaled_beta_mat <- beta_mat/rowsum
   scaled_importance_mat <- importance_mat/rowsum
 
-  # Do not think these are correct!!!!! They do not contain the guassian observations for example.
-  # Could possibly use the variance of the predictor as the measure
-
-  R2_mat <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat))# + distribution_var)
+  R2_mat <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat))
 
   if (length(random)>2){
-    R2_cond <- (rowSums(importance_mat) + rowSums(random_mat[, -1])) / (rowSums(importance_mat) + rowSums(random_mat)) # + distribution_var)
+    R2_cond <- (rowSums(importance_mat) + rowSums(random_mat[, -1])) / (rowSums(importance_mat) + rowSums(random_mat))
   }else if (length(random)==2){
-    R2_cond <- (rowSums(importance_mat) + random_mat[, -1] ) / (rowSums(importance_mat) + rowSums(random_mat)) # + distribution_var)
+    R2_cond <- (rowSums(importance_mat) + random_mat[, -1] ) / (rowSums(importance_mat) + rowSums(random_mat))
   }else{
-    R2_cond <- rowSums(importance_mat)  / (rowSums(importance_mat) + rowSums(random_mat)) # + distribution_var)
+    R2_cond <- rowSums(importance_mat)  / (rowSums(importance_mat) + rowSums(random_mat))
   }
-
-
 
   beta_mat <- as.data.frame(beta_mat)
   names(beta_mat) <- fixed
@@ -492,7 +474,6 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
     h2_mat <- as.data.frame(h2_mat)
     names(h2_mat) <- paste0("Heritability of: ", additive_param)
   }
-
 
   return(list(beta_samples = beta_mat,
               importance_samples = importance_mat,
