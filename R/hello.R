@@ -116,7 +116,7 @@ extract_effects <- function(formula) {
 #' formula <- y ~ x + f(group, model = "iid")
 #' result <- perform_inla_analysis(data, formula, family = "binomial")
 #' @export
-perform_inla_analysis <- function(data, formula, family, priors = NULL) {
+perform_inla_analysis <- function(data, formula, family, link_func="identity", priors = NULL) {
 
   data_copy <- data
 
@@ -162,7 +162,7 @@ perform_inla_analysis <- function(data, formula, family, priors = NULL) {
   inla_result <- inla(formula,
                       family = family,
                       data = data_copy,
-                      control.family = list(hyper = priors),
+                      control.family = list(hyper = priors, link = link_func),
                       control.compute = list(dic = FALSE, return.marginals=TRUE, config=TRUE, waic = TRUE))
 
   #inla_result$summary.fitted.values$descaled <- inla_result$summary.fitted.values$mean*attr(scaled, 'scaled:scale') + attr(scaled, 'scaled:center')
