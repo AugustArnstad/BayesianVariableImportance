@@ -124,7 +124,7 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", p
 
 
   # Set default priors if none are specified
-  if (is.null(priors)) {
+  if (is.null(priors) && !family %in% c("binomial", "poisson")) {
     priors <- list(
       prec = list(
         prior = "pc.prec",
