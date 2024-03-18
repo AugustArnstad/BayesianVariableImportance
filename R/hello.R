@@ -422,6 +422,13 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
         distribution_var <- 1
       } else if (link == "logit"){
         distribution_var <- pi^2/3
+
+        # I think this could be difficult to implement. Ask Steffi.
+
+        #intercept <- samps_Z[[i]]$latent[output_length-length(fixed)]
+        #fixed_contribution <- as.matrix(data[, fixed]) %*% samps_Z[[i]]$latent[(samples_tot+2):output_length]
+
+        #distribution_var <- inv.logit(intercept + fixed_contribution - 0.5*total_latent_var * tanh(((intercept+)*(1+2exp(-0.5*total_latent_var)))/6))
       }
     }else if (fam == "poisson"){
       if (link == "log"){
