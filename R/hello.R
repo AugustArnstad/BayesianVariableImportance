@@ -398,6 +398,25 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
     predictor_samples <- samps_Z[[i]]$latent[predictor_names, , drop = FALSE]
     samples_tot <- length(predictor_samples)
 
+
+    total_latent_var <- 0
+    if (length(random)>1){
+      for (j in 2:length(random)){
+        pattern <- paste0("^", random[j], ":")
+        random_names <- grep(pattern, latent_row_names, value = TRUE)
+        random_samples <- samps_Z[[i]]$latent[random_names, , drop = FALSE]
+        samples_tot <- samples_tot + length(random_samples)
+        random_mat[i, j] <- var(random_samples)
+
+        total_latent_var <- total_latent_var + var(random_samples)
+      }
+    }else{
+      if (i==n_samp){
+        print("No random effects, only resiudal variance")
+      }
+
+    }
+
     if (fam == "binomial"){
       if (link == "probit"){
         distribution_var <- 1
@@ -406,29 +425,17 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
       }
     }else if (fam == "poisson"){
       if (link == "log"){
+        # intercept <- samps_Z[[i]]$latent[output_length-length(fixed)]
+        # distribution_var <- log((1/exp(intercept)) + 1)
         intercept <- samps_Z[[i]]$latent[output_length-length(fixed)]
-        distribution_var <- log((1/exp(intercept)) + 1)
+        lambda <- exp(intercept + 0.5*total_latent_var)
+        distribution_var <- log(1 + 1/lambda)
       }else if (link == "root"){
         distribution_var <- 0.25
       }
     }
 
     random_mat[i, 1] <- distribution_var
-
-    if (length(random)>1){
-      for (j in 2:length(random)){
-        pattern <- paste0("^", random[j], ":")
-        random_names <- grep(pattern, latent_row_names, value = TRUE)
-        random_samples <- samps_Z[[i]]$latent[random_names, , drop = FALSE]
-        samples_tot <- samples_tot + length(random_samples)
-        random_mat[i, j] <- var(random_samples)
-      }
-    }else{
-      if (i==n_samp){
-        print("No random effects, only resiudal variance")
-      }
-
-    }
 
     beta <- samps_Z[[i]]$latent[(samples_tot+2):output_length]  #Skip intercept
     beta_mat[i, ] <- beta
