@@ -201,9 +201,29 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
   response <- all.vars(formula)[1]
 
   variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
-  random <- names(variance_marginals_list)
+
+  hyperparam_names <- names(variance_marginals_list)
+
+  random <- c()
+  correlations <- c()
+
+  for (name in hyperparam_names) {
+    if (grepl("Precision", name)) {
+      # If the name contains "Precision", it's a random effect
+      random <- c(random, name)
+    }else {
+      # Otherwise, consider it a correlation parameter
+      correlations <- c(correlations, name)
+    }
+  }
+
+
+  #random <- names(variance_marginals_list)
   random <- gsub("Precision for the ", "", random)
   random <- gsub("Precision for ", "", random)
+  # random <- names(variance_marginals_list)
+  # random <- gsub("Precision for the ", "", random)
+  # random <- gsub("Precision for ", "", random)
 
   sum <- summary(model)
   iidkd_indices <- which(sum$random.model == "IIDKD model")
