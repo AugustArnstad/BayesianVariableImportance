@@ -205,6 +205,26 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
   random <- gsub("Precision for the ", "", random)
   random <- gsub("Precision for ", "", random)
 
+  sum <- summary(model)
+  iidkd_indices <- which(sum$random.model == "IIDKD model")
+
+  if (length(iidkd_indices) != 0) {
+    iidkd_names <- sum$random.names[iidkd_indices]
+
+    qq_matrices <- list()
+
+    # Loop over each IIDKD model effect to perform sampling and calculate qq
+    for (iidkd_effect in iidkd_names) {
+      xx <- inla.iidkd.sample(500, model, iidkd_effect)
+      order <- dim(xx[[1]])[1]
+      qq <- matrix(rowMeans(matrix(unlist(xx), nrow = order^2)), order, order)
+      qq_matrices[[iidkd_effect]] <- qq
+    }
+  }else{
+    qq_matrices <- NULL
+  }
+
+
   beta_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
   scaled_beta_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
   importance_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
@@ -317,7 +337,8 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
               R2_marginal = R2_mat,
               R2_conditional = R2_cond,
               var_y = var_pred_mat,
-              heritability = h2_mat))
+              heritability = h2_mat,
+              iidkd_effects = qq_matrices))
 }
 
 
