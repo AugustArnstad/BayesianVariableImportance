@@ -143,7 +143,7 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", p
   effects <- extract_effects(formula)
   fixed_effects <- effects$fixed_effects
 
-  if(!is.null(fixed_effects)){
+  if(length(fixed_effects)>1){
     X <- data_copy[, c(fixed_effects)]
 
     SVD <- SVD_decomp(X)
