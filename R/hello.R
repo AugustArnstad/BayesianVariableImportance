@@ -343,7 +343,8 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
   names(R2_cond) <- "Conditional R2"
 
   if (!is.null(additive_param)){
-    h2_mat <- random_mat[, additive_param]/(rowSums(importance_mat) + rowSums(random_mat))
+    #h2_mat <- random_mat[, additive_param]/(rowSums(importance_mat) + rowSums(random_mat))
+    h2_mat <- random_mat[, additive_param]/(rowSums(random_mat))
     h2_mat <- as.data.frame(h2_mat)
     names(h2_mat) <- paste0("Heritability of: ", additive_param)
   }
@@ -525,7 +526,8 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
   names(R2_cond) <- "Conditional R2"
 
   if (!is.null(additive_param)){
-    h2_mat <- random_mat[, additive_param]/(rowSums(importance_mat) + rowSums(random_mat) + distribution_var)
+    #h2_mat <- random_mat[, additive_param]/(rowSums(importance_mat) + rowSums(random_mat) + distribution_var)
+    h2_mat <- random_mat[, additive_param]/(rowSums(distribution_var + rowSums(random_mat))
     h2_mat <- as.data.frame(h2_mat)
     names(h2_mat) <- paste0("Heritability of: ", additive_param)
   }

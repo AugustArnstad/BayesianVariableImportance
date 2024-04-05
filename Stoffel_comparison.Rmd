@@ -1,0 +1,64 @@
+---
+title: "Stoffel rpt2 comparison"
+author: "August Arnstad"
+date: "`r format(Sys.time(), '%d.%m.%Y')`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  html_document:
+    toc: yes
+    toc_float: yes
+    toc_depth: 2
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(formatR)
+showsol <- FALSE
+library(knitr)
+library(devtools)
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 68), 
+                      tidy = TRUE, 
+                      warning = FALSE, 
+                      error = FALSE, 
+                      message = FALSE, 
+                      echo = TRUE, 
+                      fig.width=7, 
+                      fig.height=5, 
+                      fig.align="center")
+
+library(remotes)
+library(devtools)
+if(!require(devtools)) install.packages("devtools")
+devtools::install_github("AugustArnstad/VariableImportanceINLA")
+library(VariableImportanceINLA)
+```
+
+```{r}
+library(rptR)
+
+data <- BeetlesFemale
+rptPoisson(Egg ~ 1+(1|Container)+(1|Population), grname=c("Container", "Population"), data=BeetlesFemale, link="log")
+
+
+
+glm_formula <- Egg ~ 1 + f(Container, model="iid") + f(Population, model="iid")
+
+model_pois_glm <- VariableImportanceINLA::perform_inla_analysis(data, glm_formula, family = "poisson", link_func = "log")
+
+
+summary(model_pois_glm)
+
+pois_glm_samples <- VariableImportanceINLA::sample_posterior_count(model_pois_glm, glm_formula, data, n_samp=500, additive_param = "Container")
+
+plot_pois_glm <- VariableImportanceINLA::plot_samples(pois_glm_samples)
+plot_pois_glm$fixed_effects
+plot_pois_glm$random_effects
+plot_pois_glm$R2
+plot_pois_glm$heritability
+
+
+```
+
