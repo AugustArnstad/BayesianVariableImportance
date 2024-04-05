@@ -143,6 +143,7 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", p
   effects <- extract_effects(formula)
   fixed_effects <- effects$fixed_effects
 
+  #   if(!is.null(fixed_effects)){
   if(length(fixed_effects)>1){
     X <- data_copy[, c(fixed_effects)]
 
@@ -477,8 +478,8 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
         # intercept <- samps_Z[[i]]$latent[output_length-length(fixed)]
         # distribution_var <- log((1/exp(intercept)) + 1)
         intercept <- samps_Z[[i]]$latent[output_length-length(fixed)]
-        lambda <- exp(intercept + 0.5*total_latent_var)
-        distribution_var <- log(1 + 1/lambda)
+        lambda_pois <- exp(intercept + 0.5*total_latent_var)
+        distribution_var <- log(1 + 1/lambda_pois)
       }else if (link == "root"){
         distribution_var <- 0.25
       }
