@@ -281,7 +281,7 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
 
     }
 
-    beta <- samps_Z[[i]]$latent[(output_length-(length(fixed)-1):output_length]  #Skip intercept
+    beta <- samps_Z[[i]]$latent[(output_length-(length(fixed)-1)):output_length]  #Skip intercept
     beta_mat[i, ] <- beta
     importance_mat[i, ] <- lambda^2 %*% beta^2
 
