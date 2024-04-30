@@ -1,4 +1,4 @@
-Package: BayesianIMPGLMM
+Package: BayesianImpGLMM
 Type: Package
 Title: Variable importance for GLMMs using INLA
 Version: 0.1.0
