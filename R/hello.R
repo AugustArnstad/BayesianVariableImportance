@@ -607,6 +607,8 @@ plot_samples <- function(samples) {
     # Convert from wide to long format
     R2_long <- pivot_longer(R2_data, cols = c(R2_marginal, R2_conditional), names_to = "Type", values_to = "Value")
 
+    R2_long$Type <- factor(R2_long$Type, levels = c("R2_marginal", "R2_conditional"))
+
     # Plot
     R2_plot <- ggplot(R2_long, aes(x = Value, fill = Type)) +
       geom_histogram(aes(y = ..density..), alpha = 0.5, position = "identity") +
