@@ -1,6 +1,5 @@
-# The method cannot handle factor variables with more than 2 levels, as this creates two or more dummy variables,
-# which causes a problem with the relative weights method. I could try to bypass this by handling each factor variable
-# if it is worth the work.
+# The method can handle factor variables with more than 2 levels, as long as these have distinct names,
+# and are encoded as dummy variables.
 
 
 # Ensure the INLA package is loaded
