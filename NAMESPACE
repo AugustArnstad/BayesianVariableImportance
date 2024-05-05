@@ -7,6 +7,7 @@ export(sample_posterior_count)
 export(SVD_decomp)
 export(plot_posteriors_and_heritability)
 export(extract_effects)
+export(extract_importances)
 export(plot_samples)
 
 
