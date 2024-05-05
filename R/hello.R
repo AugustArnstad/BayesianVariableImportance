@@ -172,6 +172,86 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", p
   return(inla_result)
 }
 
+
+extract_importances <- function(model, data, dist_factor, random_names, fixed_names) {
+  # Decompose the fixed effects matrix using SVD
+  SVD <- BayesianImpGLMM::SVD_decomp(data[, fixed_names])
+
+  # Sample from the posterior distribution
+  sample_post <- inla.posterior.sample(model, n = 1)
+
+  # Extract latent effects names
+  latent_names <- rownames(sample_post[[1]]$latent)
+
+  # Initialize a named vector to store variances for each random effect
+  imp_random <- setNames(numeric(length(random_names)), random_names)
+
+  # Iterate through each random effect name and extract corresponding samples
+  for (i in seq_along(random_names)) {
+    pattern_random <- paste0("^", random_names[i], ":")
+    random_indices <- grep(pattern_random, latent_names, value = TRUE)
+    random_samples <- sample_post[[1]]$latent[random_indices, , drop = FALSE]
+
+    # Variance of the current random effect
+    imp_random[i] <- var(random_samples)
+  }
+
+  # Calculate residual variance
+  residual_var <- 0
+  if ("Precision for the Gaussian observations" %in% rownames(model$summary.hyperpar)) {
+    residual_var <- 1 / model$summary.hyperpar["Precision for the Gaussian observations", "mean"]
+  }
+
+  # Initialize a named vector to store the fixed effects importances
+  imp_fixed <- setNames(numeric(length(fixed_names)), fixed_names)
+
+  # Extract and calculate importance for each fixed effect
+  fixed_effects <- numeric(length(fixed_names))
+  for (i in seq_along(fixed_names)) {
+    fixed_indices <- grep(paste0("^", fixed_names[i], ":"), latent_names, value = TRUE)
+    fixed_samples <- sample_post[[1]]$latent[fixed_indices, , drop = FALSE]
+
+    # Store the extracted fixed effect sample
+    fixed_effects[i] <- fixed_samples
+  }
+
+  # Calculate fixed effect importance using SVD
+  imp_fixed <- (SVD$lambda^2 %*% (fixed_effects^2))
+
+  # Calculate total variance
+  total_var <- as.double(dist_factor + sum(imp_random) + sum(imp_fixed) + residual_var)
+
+  # Calculate marginal and conditional R^2
+  r2m <- sum(imp_fixed) / total_var
+  r2c <- (sum(imp_fixed) + sum(imp_random)) / total_var
+
+  residual_imp <- 0
+  if ("Precision for the Gaussian observations" %in% rownames(model$summary.hyperpar)) {
+    residual_imp <- 1 - r2c
+  }else{
+    residual_imp <- NA
+  }
+
+  # Normalize importances
+  imp_random <- imp_random / total_var
+  imp_fixed <- imp_fixed / total_var
+
+  rownames(imp_fixed) <- fixed_names
+
+
+  # Return the results as a list with named importances
+  return(list(
+    random_importance = imp_random,
+    fixed_importance = imp_fixed,
+    residual_importance = residual_imp,
+    r2m = r2m,
+    r2c = r2c,
+    expected_importance = 1 / (dist_factor + sum(1:length(random_names)) + sum(1:length(fixed_names)) + residual_var + 1),
+    expected_r2m = sum(1:length(fixed_names)) / (dist_factor + sum(1:length(random_names)) + sum(1:length(fixed_names)) + residual_var + 1),
+    expected_r2c = (sum(1:length(fixed_names)) + sum(1:length(random_names)) + residual_var) / (dist_factor + sum(1:length(random_names)) + sum(1:length(fixed_names)) + residual_var + 1)
+  ))
+}
+
 #' Sample Posterior Distributions for Model Parameters Gaussian responses
 #'
 #' Samples from the posterior distributions of model parameters and computes derived quantities.
