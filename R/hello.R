@@ -12,11 +12,11 @@ library(INLA)
 
 #' Singular Value Decomposition (SVD) and Scaling
 #'
-#' Performs singular value decomposition on a numeric matrix and scales the data.
-#' Non-numeric columns are converted to numeric by treating factors and characters appropriately.
+#' This function performs a singular value decomposition (SVD) on a numeric matrix and scales the data.
+#' Non-numeric columns are converted to numeric values by treating factors and characters appropriately.
 #'
 #' @param X A data frame or matrix with numeric and possibly non-numeric columns.
-#' @return A list containing the SVD transformed matrix `Z`, the rotation matrix `R`,
+#' @return A list containing the SVD-transformed matrix `Z`, the rotation matrix `R`,
 #'         and the scaling factors `lambda`.
 #' @examples
 #' data(mtcars)
@@ -57,7 +57,7 @@ SVD_decomp <- function(X){
 
 #' Extract Fixed and Random Effects from a Model Formula
 #'
-#' Identifies and separates fixed and random effects specified in a model formula.
+#' This function identifies and separates fixed and random effects specified in a model formula.
 #'
 #' @param formula A model formula.
 #' @return A list with two elements: `fixed_effects` and `random_effects`,
@@ -109,6 +109,7 @@ extract_effects <- function(formula) {
 #' @param formula The formula specifying the model to be fitted.
 #' @param family The model family (e.g., "binomial", "poisson").
 #' @param priors Optional list of prior specifications for model parameters.
+#' @param link_func A link function to be used in the model (e.g., "identity", "logit").
 #' @return An object of class `inla` representing the fitted model.
 #' @examples
 #' data <- data_binomial # Assuming data_binomial is available
@@ -171,7 +172,20 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", p
   return(inla_result)
 }
 
-
+#' Extract Importance of Fixed and Random Effects
+#'
+#' Calculates the relative importance of both fixed and random effects from a fitted INLA model.
+#'
+#' @param model The fitted model object.
+#' @param data The data used for fitting the model.
+#' @param dist_factor Distributional variance factor, used to calculate residual variance.
+#' @param random_names A vector of names of the random effects.
+#' @param fixed_names A vector of names of the fixed effects.
+#' @return A list containing normalized importance values for random and fixed effects, marginal and conditional R2 values, and expected importances.
+#' @examples
+#' # Assuming `model` is an INLA model object and `data` contains appropriate predictors
+#' importance <- extract_importances(model, data, dist_factor = pi^2 / 3, random_names = "Z1", fixed_names = c("X1", "X2", "X3"))
+#' @export
 extract_importances <- function(model, data, dist_factor, random_names, fixed_names) {
   # Decompose the fixed effects matrix using SVD
   SVD <- BayesianImpGLMM::SVD_decomp(data[, fixed_names])
@@ -251,9 +265,9 @@ extract_importances <- function(model, data, dist_factor, random_names, fixed_na
   ))
 }
 
-#' Sample Posterior Distributions for Model Parameters Gaussian responses
+#' Sample Posterior Distributions for Gaussian Model Parameters
 #'
-#' Samples from the posterior distributions of model parameters and computes derived quantities.
+#' Samples from the posterior distributions of model parameters and computes derived quantities for Gaussian models.
 #'
 #' @param model The fitted model object from INLA.
 #' @param formula The model formula.
@@ -263,8 +277,8 @@ extract_importances <- function(model, data, dist_factor, random_names, fixed_na
 #' @param param_of_interest Optional; specifies parameters of interest for detailed sampling.
 #' @return A list containing matrices and data frames of sampled values and derived quantities.
 #' @examples
-#' # Assuming 'result' is an inla model object and 'data_binomial' is available
-#' samples <- sample_posterior(result, formula, data_binomial, n_samp = 100)
+#' # Assuming 'result' is an INLA model object and 'data_binomial' is available
+#' samples <- sample_posterior_gaussian(result, formula, data_binomial, n_samp = 100)
 #' @export
 sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additive_param=NULL, param_of_interest=NULL) {
 
@@ -443,9 +457,9 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
 }
 
 
-#' Sample Posterior Distributions for Model Parameters for non-Gaussian responses (no error distribution)
+#' Sample Posterior Distributions for Non-Gaussian Model Parameters
 #'
-#' Samples from the posterior distributions of model parameters and computes derived quantities.
+#' Samples from the posterior distributions of model parameters and computes derived quantities for non-Gaussian models.
 #'
 #' @param model The fitted model object from INLA.
 #' @param formula The model formula.
@@ -455,8 +469,8 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
 #' @param param_of_interest Optional; specifies parameters of interest for detailed sampling.
 #' @return A list containing matrices and data frames of sampled values and derived quantities.
 #' @examples
-#' # Assuming 'result' is an inla model object and 'data_binomial' is available
-#' samples <- sample_posterior(result, formula, data_binomial, n_samp = 100)
+#' # Assuming 'result' is an INLA model object and 'data_binomial' is available
+#' samples <- sample_posterior_count(result, formula, data_binomial, n_samp = 100)
 #' @export
 sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_param=NULL, param_of_interest=NULL) {
 
