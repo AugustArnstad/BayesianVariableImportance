@@ -39,6 +39,9 @@ library(MASS)
 library(dplyr)
 ```
 
+## Simulation study
+This code is what has been used to perform the reported simulation study in the masters thesis. NB: The code can take very long to run. It is recommended to only run it if you really need the results. See usage example for an easier example of how to apply the BVI method. 
+
 
 ```{r}
 

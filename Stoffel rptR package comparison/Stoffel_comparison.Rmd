@@ -61,7 +61,7 @@ data_pois <- BeetlesFemale
 
 data_pois$Treatment <- as.numeric(data_pois$Treatment)
 
-rptPois <- rptPoisson(Egg ~ Treatment+(1|Container)+(1|Population), grname=c("Container", "Population"), data=data_pois, link="log", nboot=100, adjusted = FALSE, expect = "latent")
+rptPois <- rptPoisson(Egg ~ Treatment+(1|Container)+(1|Population), grname=c("Container", "Population"), data=data_pois, link="log", nboot=1000, adjusted = FALSE, expect = "latent")
 
 summary(rptPois)
 
@@ -98,7 +98,7 @@ data(BeetlesBody)
 
 data_gauss <- BeetlesBody
 
-rpt_gauss_1 <- rpt(BodyL ~ (1 | Population), grname = "Population", data = data_gauss, datatype = "Gaussian", nboot = 100)
+rpt_gauss_1 <- rpt(BodyL ~ (1 | Population), grname = "Population", data = data_gauss, datatype = "Gaussian", nboot = 1000)
 
 gauss_formula <- BodyL ~ f(Population, model="iid")
 
@@ -114,7 +114,7 @@ gauss_1_glm_samples <- BayesianVariableImportance::sample_posterior_gaussian(mod
 ## Compare Gaussian with multiple random effects (vignette, rep3)
 
 ```{r}
-rpt_gauss_2 <- rpt(BodyL ~ (1 | Population) + (1 | Container), grname = c("Population", "Container"), data = data_gauss, datatype = "Gaussian", nboot = 100)
+rpt_gauss_2 <- rpt(BodyL ~ (1 | Population) + (1 | Container), grname = c("Population", "Container"), data = data_gauss, datatype = "Gaussian", nboot = 1000)
     #nboot = 0, npermut = 0)
 
 stoffel_heritability_gauss_2 <- rpt_gauss_2$R$Container
@@ -138,7 +138,7 @@ data_bin <- BeetlesMale
 
 
 rptBinary <- rpt(Colour ~ Treatment + (1 | Container) + (1 | Population), grname =  
-    "Population", data = BeetlesMale, datatype = "Binary", nboot = 100, npermut = 0, adjusted = FALSE)
+    "Population", data = BeetlesMale, datatype = "Binary", nboot = 1000, npermut = 0, adjusted = FALSE)
 
 stoffel_heritability_binomial <- rptBinary$R$Population[2]
 
