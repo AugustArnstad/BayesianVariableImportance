@@ -305,8 +305,8 @@ extract_importances <- function(model, data, random_names, fixed_names, dist_fac
 #' @param formula The model formula.
 #' @param data The data used for fitting the model.
 #' @param n_samp Number of samples to draw from the posterior distributions.
-#' @param additive_param Optional; specifies an additive parameter for which to compute heritability.
-#' @param param_of_interest Optional; specifies parameters of interest for detailed sampling.
+#' @param additive_param Optional; specifies an additive parameter for which to compute repeatability
+#' @param repeatability Optional; calculates the repeatability (variance of additive_param divided by sum of random variances) according to Stoffel et. al - rptR: repeatability estimation and variance decomposition by generalized linear mixed-effects models (2017).
 #' @return A list containing matrices and data frames of sampled values and derived quantities.
 #' @examples
 #' # Assuming 'result' is an INLA model object and 'data_binomial' is available
@@ -495,8 +495,8 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
 #' @param formula The model formula.
 #' @param data The data used for fitting the model.
 #' @param n_samp Number of samples to draw from the posterior distributions.
-#' @param additive_param Optional; specifies an additive parameter for which to compute heritability.
-#' @param param_of_interest Optional; specifies parameters of interest for detailed sampling.
+#' @param additive_param Optional; specifies an additive parameter for which to compute repeatability
+#' @param repeatability Optional; calculates the repeatability (variance of additive_param divided by sum of random variances) according to Stoffel et. al - rptR: repeatability estimation and variance decomposition by generalized linear mixed-effects models (2017).
 #' @return A list containing matrices and data frames of sampled values and derived quantities.
 #' @examples
 #' # Assuming 'result' is an INLA model object and 'data_binomial' is available
