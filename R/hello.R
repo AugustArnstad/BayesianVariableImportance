@@ -178,15 +178,15 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", p
 #'
 #' @param model The fitted model object.
 #' @param data The data used for fitting the model.
-#' @param dist_factor Distributional variance factor, used to calculate residual variance.
 #' @param random_names A vector of names of the random effects.
 #' @param fixed_names A vector of names of the fixed effects.
+#' @param dist_factor Distributional variance factor, used to calculate residual variance. If NULL, the family and link will be checked. If the family is binomial with logit link, the dist_factor will be set to pi^2 / 3. If the family is binomial with probit link, the dist_factor will be set to 1. If the family is poisson, the dist_factor will be calculated as described in Nakagawa et. al - A general and simple method for obtaining R2 from generalized linear mixed-effects models (2013) and Nakagawa et. al - The coefficient of determination R2 and intra-class correlation coefficient from generalized linear mixed-effects models revisited and expanded (2017). If the family does not match any of these, the dist_factor will be set to 0, corresponding to Gaussian responses (LMM)
 #' @return A list containing normalized importance values for random and fixed effects, marginal and conditional R2 values, and expected importances.
 #' @examples
 #' # Assuming `model` is an INLA model object and `data` contains appropriate predictors
 #' importance <- extract_importances(model, data, dist_factor = pi^2 / 3, random_names = "Z1", fixed_names = c("X1", "X2", "X3"))
 #' @export
-extract_importances <- function(model, data, dist_factor, random_names, fixed_names) {
+extract_importances_test <- function(model, data, random_names, fixed_names, dist_factor=NULL) {
   # Decompose the fixed effects matrix using SVD
   SVD <- BayesianImpGLMM::SVD_decomp(data[, fixed_names])
 
@@ -231,6 +231,38 @@ extract_importances <- function(model, data, dist_factor, random_names, fixed_na
   # Calculate fixed effect importance using SVD
   imp_fixed <- (SVD$lambda^2 %*% (fixed_effects^2))
 
+  fam <- model$.args$family
+
+  link <- model$.args$control.family[[1]]$link
+
+  if (is.null(dist_factor)){
+    if (fam == "binomial"){
+      if (link == "probit"){
+        dist_factor <- 1
+      } else if (link == "logit"){
+        dist_factor <- pi^2/3
+
+        # I think this could be difficult to implement. Ask Steffi.
+
+        #intercept <- samps_Z[[i]]$latent[output_length-length(fixed)]
+        #fixed_contribution <- as.matrix(data[, fixed]) %*% samps_Z[[i]]$latent[(samples_tot+2):output_length]
+
+        #distribution_var <- inv.logit(intercept + fixed_contribution - 0.5*total_latent_var * tanh(((intercept+)*(1+2exp(-0.5*total_latent_var)))/6))
+      }
+    }else if (fam == "poisson"){
+      if (link == "log"){
+        intercept <- model$summary.fixed["(Intercept)", "mean"]
+        lambda_pois <- exp(intercept + 0.5*sum(imp_random))
+        dist_factor <- log(1 + 1/lambda_pois)
+      }else if (link == "root"){
+        dist_factor <- 0.25
+      }
+    }else{
+      dist_factor <- 0
+    }
+  }
+
+
   # Calculate total variance
   total_var <- as.double(dist_factor + sum(imp_random) + sum(imp_fixed) + residual_var)
 
@@ -258,10 +290,10 @@ extract_importances <- function(model, data, dist_factor, random_names, fixed_na
     fixed_importance = imp_fixed,
     residual_importance = residual_imp,
     r2m = r2m,
-    r2c = r2c,
-    expected_importance = 1 / (dist_factor + sum(1:length(random_names)) + sum(1:length(fixed_names)) + residual_var + 1),
-    expected_r2m = sum(1:length(fixed_names)) / (dist_factor + sum(1:length(random_names)) + sum(1:length(fixed_names)) + residual_var + 1),
-    expected_r2c = (sum(1:length(fixed_names)) + sum(1:length(random_names)) + residual_var) / (dist_factor + sum(1:length(random_names)) + sum(1:length(fixed_names)) + residual_var + 1)
+    r2c = r2c
+    #expected_importance = 1 / (dist_factor + sum(1:length(random_names)) + sum(1:length(fixed_names)) + residual_var + 1),
+    #expected_r2m = sum(1:length(fixed_names)) / (dist_factor + sum(1:length(random_names)) + sum(1:length(fixed_names)) + residual_var + 1),
+    #expected_r2c = (sum(1:length(fixed_names)) + sum(1:length(random_names)) + residual_var) / (dist_factor + sum(1:length(random_names)) + sum(1:length(fixed_names)) + residual_var + 1)
   ))
 }
 
