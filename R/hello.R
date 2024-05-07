@@ -186,7 +186,7 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", p
 #' # Assuming `model` is an INLA model object and `data` contains appropriate predictors
 #' importance <- extract_importances(model, data, dist_factor = pi^2 / 3, random_names = "Z1", fixed_names = c("X1", "X2", "X3"))
 #' @export
-extract_importances_test <- function(model, data, random_names, fixed_names, dist_factor=NULL) {
+extract_importances <- function(model, data, random_names, fixed_names, dist_factor=NULL) {
   # Decompose the fixed effects matrix using SVD
   SVD <- BayesianImpGLMM::SVD_decomp(data[, fixed_names])
 
