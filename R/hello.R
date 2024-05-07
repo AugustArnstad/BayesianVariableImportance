@@ -312,7 +312,7 @@ extract_importances <- function(model, data, random_names, fixed_names, dist_fac
 #' # Assuming 'result' is an INLA model object and 'data_binomial' is available
 #' samples <- sample_posterior_gaussian(result, formula, data_binomial, n_samp = 100)
 #' @export
-sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additive_param=NULL, param_of_interest=NULL) {
+sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additive_param=NULL, repeatability = FALSE) {
 
   # Make the param_of_interest a general input object for all functions. That was a nice way to put it
 
@@ -468,11 +468,10 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
   R2_cond <- as.data.frame(R2_cond)
   names(R2_cond) <- "Conditional R2"
 
-  if (!is.null(additive_param)){
-    #h2_mat <- random_mat[, additive_param]/(rowSums(importance_mat) + rowSums(random_mat))
-    h2_mat <- random_mat[, additive_param]/(rowSums(random_mat))
-    h2_mat <- as.data.frame(h2_mat)
-    names(h2_mat) <- paste0("Heritability of: ", additive_param)
+  if (!is.null(additive_param) && repeatability){
+    repeat_mat <- random_mat[, additive_param]/(rowSums(random_mat))
+    repeat_mat <- as.data.frame(repeat_mat)
+    names(repeat_mat) <- paste0("Repeatability of: ", additive_param)
   }
 
   return(list(beta_samples = beta_mat,
@@ -484,8 +483,7 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
               R2_marginal = R2_mat,
               R2_conditional = R2_cond,
               var_y = var_pred_mat,
-              heritability = h2_mat,
-              iidkd_effects = qq_matrices))
+              repeatability = repeat_mat))
 }
 
 
@@ -504,7 +502,7 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
 #' # Assuming 'result' is an INLA model object and 'data_binomial' is available
 #' samples <- sample_posterior_count(result, formula, data_binomial, n_samp = 100)
 #' @export
-sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_param=NULL, param_of_interest=NULL) {
+sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_param=NULL, repeatability = FALSE) {
 
   # Make the param_of_interest a general input object for all functions. That was a nice way to put it
 
@@ -651,11 +649,11 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
   R2_cond <- as.data.frame(R2_cond)
   names(R2_cond) <- "Conditional R2"
 
-  if (!is.null(additive_param)){
+  if (!is.null(additive_param) && repeatability){
     #h2_mat <- random_mat[, additive_param]/(rowSums(importance_mat) + rowSums(random_mat) + distribution_var)
-    h2_mat <- random_mat[, additive_param]/(rowSums(random_mat))
-    h2_mat <- as.data.frame(h2_mat)
-    names(h2_mat) <- paste0("Heritability of: ", additive_param)
+    repeat_mat <- random_mat[, additive_param]/(rowSums(random_mat))
+    repeat_mat <- as.data.frame(repeat_mat)
+    names(repeat_mat) <- paste0("Repeatability of: ", additive_param)
   }
 
   return(list(beta_samples = beta_mat,
@@ -667,7 +665,7 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
               R2_marginal = R2_mat,
               R2_conditional = R2_cond,
               var_y = var_pred_mat,
-              heritability = h2_mat))
+              repeatability = repeat_mat))
 }
 
 
