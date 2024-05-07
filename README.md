@@ -1,8 +1,8 @@
 # VariableImportanceINLA
 **Bayesian Variable Importance for GLMMs using INLA**
-This is a package developed for my masters thesis at NTNU. It is a further developement of a previous package BayesianImportance, available in full at https://github.com/AugustArnstad/BayesianImportance.
+This is a package developed for my masters thesis at NTNU. It is a further developement and extension of the previous package BayesianImportance, available in full at https://github.com/AugustArnstad/BayesianImportance.
 
-`VariableImportanceINLA` is an R package designed to compute Bayesian variable importance metrics for Generalized Linear Mixed Models (GLMMs) utilizing the Integrated Nested Laplace Approximation (INLA) methodology.
+`BayesianVariableImportance` is an R package designed to compute Bayesian variable importance metrics for Generalized Linear Mixed Models (GLMMs) utilizing the Integrated Nested Laplace Approximation (INLA) methodology.
 
 ## Features
 - **Bayesian Variable Importance Computation**: Allows for the quantification of the importance/statistical evidence of predictors in GLMMs in a Bayesian framework. Currently it handles gaussian (identity link), binomial (probit or logit link) and Poisson (log link) data, but more extension are desirable in the near future.
@@ -12,14 +12,14 @@ This is a package developed for my masters thesis at NTNU. It is a further devel
 - **Priors**: INLAs default penalize complexity priors are used as defaults, but others can be specified if desirable
 
 ## Installation
-To install the latest version of `VariableImportanceINLA` from GitHub you need INLA. You can therefore use the following command:
+To install the latest version of `BayesianVariableImportance` from GitHub you need INLA. You can therefore use the following command:
 ```R
 install.packages("INLA", repos = c(getOption("repos"), INLA = "https://inla.r-inla-download.org/R/stable"), dep = TRUE)
 
 # If not already installed, install the 'devtools' package
 if(!require(devtools)) install.packages("devtools")
-# Install VariableImportanceINLA from GitHub
-devtools::install_github("AugustArnstad/VariableImportanceINLA")
+# Install BayesianVariableImportance from GitHub
+devtools::install_github("AugustArnstad/BayesianVariableImportance")
 ``` 
 
 ## Usage
@@ -44,7 +44,7 @@ A worked
 Further documentation and function references can be found within the package. Use the standard R help and documentation commands to access detailed information about each function.
 
 ## Contributing
-Contributions to `VariableImportanceINLA` are welcome. Please ensure that you adhere to standard coding practices and include tests for any new features. Open a pull request with details about your changes.
+Contributions to `BayesianVariableImportance` are welcome. Please ensure that you adhere to standard coding practices and include tests for any new features. Open a pull request with details about your changes.
 
 ## License
 This project is licensed under the MIT License - see the LICENSE.txt file for details
