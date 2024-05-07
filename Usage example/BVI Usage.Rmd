@@ -179,6 +179,8 @@ plots_logit <- BayesianVariableImportance::plot_samples(samples_logit)
 plots_pois <- BayesianVariableImportance::plot_samples(samples_pois)
 plots_lmm <- BayesianVariableImportance::plot_samples(samples_lmm)
 
+
+
 ```
 
 ## IMPORTANCES
