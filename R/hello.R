@@ -188,7 +188,7 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", p
 #' @export
 extract_importances <- function(model, data, random_names, fixed_names, dist_factor=NULL) {
   # Decompose the fixed effects matrix using SVD
-  SVD <- BayesianImpGLMM::SVD_decomp(data[, fixed_names])
+  SVD <- BayesianVariableImportance::SVD_decomp(data[, fixed_names])
 
   # Sample from the posterior distribution
   sample_post <- inla.posterior.sample(model, n = 1)
