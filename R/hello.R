@@ -380,6 +380,7 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
   R2_cond_mat <- matrix(NA, nrow=n_samp, ncol=1)
   var_pred_mat <- matrix(NA, nrow=n_samp, ncol=1)
   h2_mat <- matrix(NA, nrow=n_samp, ncol=1)
+  repeat_mat <- matrix(NA, nrow=n_samp, ncol=1)
   random_mat <- matrix(NA, nrow=n_samp, ncol=length(random))
   scaled_random_mat <- matrix(NA, nrow=n_samp, ncol=length(random))
 
