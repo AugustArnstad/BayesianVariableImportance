@@ -6,9 +6,9 @@
 ## Features
 - **Bayesian Variable Importance Computation**: Allows for the quantification of the importance/statistical evidence of predictors in GLMMs in a Bayesian framework. Currently it handles gaussian (identity link), binomial (probit or logit link) and Poisson (log link) data, but more extension are desirable in the near future.
 - **INLA Integration**: Leverages the computational advantages of INLA, a popular method for Bayesian inference for latent Gaussian models.
-- **Support for Various GLMMs**: Compatible with a wide range of generalized linear mixed models.
+- **Priors**: INLAs penalizing complexity priors are used as defaults, but others can be specified if desirable.
 - **Extensible**: Designed with the modern R user in mind, offering a range of utilities to further expand upon the base functionality.
-- **Priors**: INLAs default penalize complexity priors are used as defaults, but others can be specified if desirable
+- **Usage examples**: In the package, we showcase a simulation study, a case study comparing it to the `rptR` package and analysis on real data gathered from house sparrows on Helgelandskysten, Norway.
 
 ## Installation
 To install the latest version of `BayesianVariableImportance` from GitHub you need INLA. You can therefore use the following command:
@@ -41,16 +41,24 @@ imp_pois <- BayesianVariableImportance::extract_importances(model_pois,
 
 
 # Compute the variable importance metrics by sampling from the joint posterior. Specify the additive parameter, which represents the additive 
-# variance component of an animal model (see Kruuk - Estimating genetic parameters in natural populations using the ‘animal model’ (2004))
-samples_pois <- BayesianVariableImportance::sample_posterior_count(model_pois, glmm_pois, datasets$poisson, n_samp=5000, additive_param = "Z1")
+# variance component and what scale to compute repeatability on (see Kruuk - Estimating genetic parameters in natural populations using the ‘animal model’ (2004) and
+# Stoffel - rptR: repeatability estimation and variance decomposition by generalized linear mixed-effects models for explanations).
+samples_pois <- BayesianVariableImportance::sample_posterior_count(model_pois, glmm_pois, datasets$poisson, n_samp=5000, additive_param = "Z1", repeatability = FALSE)
 
 # Plot the variable importance metrics
 plots_pois <- BayesianVariableImportance::plot_samples(samples_pois)
 ``` 
 
-A worked example can be found in the BVI Usage.Rmd file.
+A worked example for simulated data can be found in the BVI Usage.Rmd file.
+
 ## Simulation study
 A full simulation study, which has been described, reported and discussed in my master thesis, can be found in the file Simulation study.Rmd
+
+## Case studies
+A case study, following the vignette of the `rptR` package, which has been described, reported and discussed in my master thesis, can be found in the file Stoffel_comparison.Rmd
+
+## Real data analysis
+A study on the heritability of phenotypic traits in house sparrows is conducted in the file Animal_model.Rmd. The data is not licensed by me to put on Github, but it has been descirbed in the masters thesis, with references to more information.
 
 ## Documentation
 Further documentation and function references can be found within the package. Use the standard R help and documentation commands to access detailed information about each function.
