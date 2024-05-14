@@ -1,0 +1,387 @@
+---
+title: "Animal Model example"
+author: "August Arnstad"
+date: "`r format(Sys.time(), '%d.%m.%Y')`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  html_document:
+    toc: yes
+    toc_float: yes
+    toc_depth: 2
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(formatR)
+showsol <- FALSE
+library(knitr)
+library(devtools)
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 68), 
+                      tidy = TRUE, 
+                      warning = FALSE, 
+                      error = FALSE, 
+                      message = FALSE, 
+                      echo = TRUE, 
+                      fig.width=7, 
+                      fig.height=5, 
+                      fig.align="center")
+
+library(remotes)
+library(devtools)
+if(!require(devtools)) install.packages("devtools")
+devtools::install_github("AugustArnstad/BayesianVariableImportance")
+library(BayesianVariableImportance)
+library(ggplot2)
+library(microbenchmark)
+```
+
+## This code contains the models fitted and samples drawn, without needing to access the data:
+
+```{r}
+# To load this file back into R:
+setwd("~/Library/CloudStorage/OneDrive-NTNU/Semester_10/BayesianVariableImportance/Animal model example/Models and samples")
+
+
+model_mass <- readRDS("Models and samples/model_mass_10.05.rds")
+samples_mass <- readRDS("Models and samples/samples_mass_10.05.rds")
+
+model_wing <- readRDS("Models and samples/model_wing_10.05.rds")
+samples_wing <- readRDS("Models and samples/samples_wing_10.05.rds")
+
+model_tarsus <- readRDS("Models and samples/model_tarsus_10.05.rds")
+samples_tarsus <- readRDS("Models and samples/samples_tarsus_10.05.rds")
+```
+
+
+
+
+# Custom plots for use in thesis.
+# In general, I think I should pick a colour palette that is the same for the whole thesis.
+```{r}
+str(samples_mass)
+
+silva_mass <- 0.300
+silva_wing <- 0.388
+silva_tarsus <- 0.415
+
+muff_mass <- 0.288
+muff_wing <- 0.344
+
+additive_genetic <- "IDC2"
+
+CI_mass <- quantile(samples_mass$scaled_random_samples$IDC2, c(0.025, 0.975))
+
+
+# Dynamically specify the column name in aes() using rlang's sym() and !! for tidy evaluation
+heritability_mass <- ggplot(samples_mass$scaled_random_samples, aes(x = !!sym(additive_genetic))) +
+  geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
+  geom_density(color = "#E6A0C4", adjust = 1.5, linewidth=1.5) +
+  #geom_point(aes(x = mean(samples_mass$scaled_random_samples$IDC2), y = 0), color = "#E6A0C4", size = 4) +
+  #geom_point(aes(x = mean(silva_mass), y = 0), color = "#FFD700", size = 4) +
+  #geom_point(aes(x = mean(muff_mass), y = 0), color = "#32CD32", size = 4) +
+  annotate("point", x = mean(samples_mass$scaled_random_samples$IDC2), y = 0, color = "#E6A0C4", size = 4) +
+  annotate("point", x = median(samples_mass$scaled_random_samples$IDC2), y = 0, color = "grey", size = 4) +
+  annotate("point", x = mean(silva_mass), y = 0, color = "#FFD700", size = 4) +
+  annotate("point", x = mean(muff_mass), y = 0, color = "#32CD32", size = 4) +
+  geom_vline(aes(xintercept = CI_mass[1]), color = "#E6A0C4", linewidth = 1, linetype = "dashed") +
+  geom_vline(aes(xintercept = CI_mass[2]), color = "#E6A0C4", linewidth = 1, linetype = "dashed") +
+  labs(#title = paste("Heritability of mass"),
+       x = "Samples of heritability",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none",
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 24),
+    axis.text.x = element_text(size = 24),
+    axis.text.y = element_text(size = 24)
+    ) 
+# theme(
+#   plot.background = element_rect(fill = "white"),
+#   #panel.grid.major = element_blank(),
+#   #panel.grid.minor = element_blank(),
+#   text = element_text(size = 12, family = "Arial"),
+#   axis.text.x = element_text(angle = 45, hjust = 1)
+# )
+
+heritability_mass
+
+mean(samples_mass$scaled_random_samples$IDC2)
+median(samples_mass$scaled_random_samples$IDC2)
+```
+
+
+```{r}
+str(samples_wing)
+
+CI_wing <- quantile(samples_wing$scaled_random_samples$IDC2, c(0.025, 0.975))
+
+# Dynamically specify the column name in aes() using rlang's sym() and !! for tidy evaluation
+heritability_wing <- ggplot(samples_wing$scaled_random_samples, aes(x = !!sym(additive_genetic))) +
+  geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
+  geom_density(color = "#E6A0C4", adjust = 1.5, linewidth=1.5) +
+  #geom_point(aes(x = mean(samples_wing$scaled_random_samples$IDC2), y = 0), color = "#E6A0C4", size = 4) +
+  #geom_point(aes(x = mean(silva_wing), y = 0), color = "#FFD700", size = 4) +
+  #geom_point(aes(x = mean(muff_wing), y = 0), color = "#32CD32", size = 4) +
+  annotate("point", x = mean(samples_wing$scaled_random_samples$IDC2), y = 0, color = "#E6A0C4", size = 4) +
+  annotate("point", x = median(samples_wing$scaled_random_samples$IDC2), y = 0, color = "grey", size = 4) +
+  annotate("point", x = mean(silva_wing), y = 0, color = "#FFD700", size = 4) +
+  annotate("point", x = mean(muff_wing), y = 0, color = "#32CD32", size = 4) +
+  geom_vline(aes(xintercept = CI_wing[1]), color = "#E6A0C4", linewidth = 1, linetype = "dashed") +
+  geom_vline(aes(xintercept = CI_wing[2]), color = "#E6A0C4", linewidth = 1, linetype = "dashed") +
+  labs(#title = paste("Heritability of wing"), 
+       x = "Samples of heritability", 
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none",
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 24),
+    axis.text.x = element_text(size = 24),
+    axis.text.y = element_text(size = 24)
+    ) 
+# theme(
+#   plot.background = element_rect(fill = "white"),
+#   #panel.grid.major = element_blank(),
+#   #panel.grid.minor = element_blank(),
+#   text = element_text(size = 12, family = "Arial"),
+#   axis.text.x = element_text(angle = 45, hjust = 1)
+# )
+
+heritability_wing
+
+mean(samples_wing$scaled_random_samples$IDC2)
+median(samples_wing$scaled_random_samples$IDC2)
+
+quantile(samples_wing$scaled_random_samples$IDC2, c(0.025, 0.975))
+```
+
+
+```{r}
+str(samples_tarsus)
+
+CI_tarsus <- quantile(samples_tarsus$scaled_random_samples$IDC2, c(0.025, 0.975))
+
+# Dynamically specify the column name in aes() using rlang's sym() and !! for tidy evaluation
+heritability_tarsus <- ggplot(samples_tarsus$scaled_random_samples, aes(x = !!sym(additive_genetic))) +
+  geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
+  geom_density(color = "#E6A0C4", adjust = 1.5, linewidth=1.5) +
+  #geom_point(aes(x = mean(samples_tarsus$scaled_random_samples$IDC2), y = 0), color = "#E6A0C4", size = 4) +
+  #geom_point(aes(x = mean(silva_tarsus), y=0), color = "#FFD700", size = 4) +
+  annotate("point", x = mean(samples_tarsus$scaled_random_samples$IDC2), y = 0, color = "#E6A0C4", size = 4) +
+  annotate("point", x = median(samples_tarsus$scaled_random_samples$IDC2), y = 0, color = "grey", size = 4) +
+  annotate("point", x = mean(silva_tarsus), y = 0, color = "#FFD700", size = 4) +
+  geom_vline(aes(xintercept = CI_tarsus[1]), color = "#E6A0C4", linewidth = 1, linetype = "dashed") +
+  geom_vline(aes(xintercept = CI_tarsus[2]), color = "#E6A0C4", linewidth = 1, linetype = "dashed") +
+  labs(#title = paste("Heritability of tarsus"), 
+       x = "Samples of heritability", 
+       y = "Frequency") +
+  theme_minimal() +
+  theme(legend.position = "none",
+    axis.title.x = element_text(size = 24),
+    axis.title.y = element_text(size = 24),
+    axis.text.x = element_text(size = 24),
+    axis.text.y = element_text(size = 24)
+    ) 
+
+
+heritability_tarsus
+
+mean(samples_tarsus$scaled_random_samples$IDC2)
+median(samples_tarsus$scaled_random_samples$IDC2)
+quantile(samples_tarsus$scaled_random_samples$IDC2, c(0.025, 0.975))
+sd(samples_tarsus$scaled_random_samples$IDC2)#/sqrt(length(samples_tarsus$scaled_random_samples$IDC2))
+
+```
+
+
+## The below code is made with the data available. A pedigree structure is inialized in the source code, which is not available here. 
+
+```{r, echo = FALSE, eval = FALSE}
+set.seed(1)
+setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/Animal modelling INLA, sparrows")
+source("code/DataPrep.R")
+str(d.morph)
+
+```
+
+```{r, echo = FALSE, eval = FALSE}
+set.seed(1)
+AA <- solve(Ainv$Ainv)
+# Some trick to make the thing numerically stable, because the inversion leads to some tiny non-zero values that are artefacts of the inversion...:
+AA <- round(AA,8)
+AA[AA==0] <- 0
+# Final A-matrix:
+AAA <- AA[d.map[1:3116,2],d.map[1:3116,2]]
+#
+isSymmetric(AAA)
+# A-matrix needs to be inverted to be used in INLA:
+Cmatrix <- solve(AAA)
+# Again, to correct for some numerical instability, we set values <10^{-4} to 0
+Cmatrix <- round(Cmatrix,4)
+Cmatrix[Cmatrix==0] <- 0
+isSymmetric(Cmatrix)
+```
+
+```{r}
+formula.mass = mass ~ sex + FGRM + month + age + outer + other +
+  f(hatchyear,model="iid",hyper=list(
+    prec=list(initial=log(1), prior="pc.prec",param=c(1,0.05))
+  ))+
+  f(IDC,model="iid",hyper=list(
+    prec=list(initial=log(1), prior="pc.prec",param=c(1,0.05))
+  )) +
+  f(IDC2,values=1:3116,model="generic0",
+    Cmatrix=Cmatrix,
+    constr = TRUE,
+    hyper=list(
+      # The priors are relevant, need to discuss
+      prec=list(initial=log(0.5), prior="pc.prec",param=c(sqrt(2),0.05))
+    ))
+
+formula.tarsus = tarsus ~ sex + FGRM + month + age + outer + other +
+  f(hatchyear,model="iid",hyper=list(
+    prec=list(initial=log(1), prior="pc.prec",param=c(1,0.05))
+  ))+
+  f(IDC,model="iid",hyper=list(
+    prec=list(initial=log(1), prior="pc.prec",param=c(1,0.05))
+  )) +
+  f(IDC2,values=1:3116,model="generic0",
+    Cmatrix=Cmatrix,
+    constr = TRUE,
+    hyper=list(
+      # The priors are relevant, need to discuss
+      prec=list(initial=log(0.5), prior="pc.prec",param=c(sqrt(2),0.05))
+    ))
+
+formula.wing = wing ~ sex + FGRM + month + age + outer + other +
+  f(hatchyear,model="iid",hyper=list(
+    prec=list(initial=log(1), prior="pc.prec",param=c(1,0.05))
+  ))+
+  f(IDC,model="iid",hyper=list(
+    prec=list(initial=log(1), prior="pc.prec",param=c(1,0.05))
+  )) +
+  f(IDC2,values=1:3116,model="generic0",
+    Cmatrix=Cmatrix,
+    constr = TRUE,
+    hyper=list(
+      # The priors are relevant, need to discuss
+      prec=list(initial=log(0.5), prior="pc.prec",param=c(sqrt(2),0.05))
+    ))
+```
+
+```{r, echo = FALSE, eval = FALSE}
+set.seed(1)
+prior_mass = list(theta = list(initial=log(0.5),  prior="pc.prec",param=c(sqrt(2),0.05)))
+
+timing_result_mass <- microbenchmark(
+  {
+    model_mass <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.mass, "gaussian", priors = prior_mass)
+
+    samples_mass <- BayesianVariableImportance::sample_posterior_gaussian(model_mass, formula.mass, d.morph, n_samp=10000, additive_param = "IDC2")
+  },
+  times = 1  # Number of times to run the chunk for better accuracy
+)
+
+print(timing_result_mass)
+
+plots_mass <- BayesianVariableImportance::plot_samples(samples_mass)
+
+```
+
+```{r, echo = FALSE, eval = FALSE}
+plots_mass$fixed_effects
+plots_mass$random_effects
+plots_mass$heritability
+plots_mass$R2
+```
+
+```{r}
+set.seed(1)
+prior_wing = list(theta = list(initial=log(0.5),  prior="pc.prec",param=c(sqrt(2),0.05)))
+#prior_wing = list(theta = list(initial=log(1),  prior="pc.prec",param=c(sqrt(2),0.05)))
+
+timing_result_wing <- microbenchmark(
+  {
+    model_wing <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.wing, "gaussian", priors = prior_wing)
+
+    samples_wing <- BayesianVariableImportance::sample_posterior_gaussian(model_wing, formula.wing, d.morph, n_samp=10000, additive_param = "IDC2")
+  },
+  times = 1  # Number of times to run the chunk for better accuracy
+)
+
+print(timing_result_wing)
+
+
+plots_wing <- BayesianVariableImportance::plot_samples(samples_wing)
+```
+
+```{r}
+plots_wing$fixed_effects
+plots_wing$random_effects
+plots_wing$heritability
+plots_wing$R2
+```
+
+```{r}
+set.seed(1)
+prior_tarsus = list(theta = list(initial=log(0.5),  prior="pc.prec",param=c(sqrt(2),0.05)))
+
+timing_result_tarsus <- microbenchmark(
+  {
+      model_tarsus <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.tarsus, "gaussian", priors = prior_tarsus)
+
+      samples_tarsus <- BayesianVariableImportance::sample_posterior_gaussian(model_tarsus, formula.tarsus, d.morph, n_samp=10000, additive_param = "IDC2")
+  },
+  times = 1  # Number of times to run the chunk for better accuracy
+)
+
+print(timing_result_tarsus)
+
+
+plots_tarsus <- BayesianVariableImportance::plot_samples(samples_tarsus)
+```
+
+```{r}
+plots_tarsus$fixed_effects
+plots_tarsus$random_effects
+plots_tarsus$heritability
+plots_tarsus$R2
+
+dim(d.morph)
+```
+
+
+```{r}
+# Saving the entire loaded_sim_no$successes object as an RDS file
+setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/R kladd/Animal model results")
+
+saveRDS(model_mass, "model_mass_10.05.rds")
+saveRDS(samples_mass, "samples_mass_10.05.rds")
+
+saveRDS(model_wing, "model_wing_10.05.rds")
+saveRDS(samples_wing, "samples_wing_10.05.rds")
+
+saveRDS(model_tarsus, "model_tarsus_10.05.rds")
+saveRDS(samples_tarsus, "samples_tarsus_10.05.rds")
+```
+
+
+
+
+```{r}
+set.seed(1)
+setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/Master/Latex/Figures")
+plot_folder <- "House sparrow study"
+
+# Check if the folder exists, if not, create it
+if (!dir.exists(plot_folder)) {
+  dir.create(plot_folder)
+}
+
+ggsave(filename="Heritability_mass.png", plot=heritability_mass, path=plot_folder, width = 10, height = 6, dpi = 300)
+ggsave(filename="Heritability_wing.png", plot=heritability_wing, path=plot_folder, width = 10, height = 6, dpi = 300)
+ggsave(filename="Heritability_tarsus.png", plot=heritability_tarsus, path=plot_folder, width = 10, height = 6, dpi = 300)
+
+```
