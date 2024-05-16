@@ -199,9 +199,9 @@ sd(samples_tarsus$scaled_random_samples$IDC2)#/sqrt(length(samples_tarsus$scaled
 ## The below code is made with the data available. A pedigree structure is inialized in the source code, which is not available here. 
 
 ```{r, echo = FALSE, eval = FALSE}
-set.seed(1)
-setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/Animal modelling INLA, sparrows")
-source("code/DataPrep.R")
+# Add your path to the source code file here:
+setwd("~/BayesianVariableImportance/Animal model example")
+source("../Animal model source code and data/DataPrep.R")
 str(d.morph)
 
 ```
