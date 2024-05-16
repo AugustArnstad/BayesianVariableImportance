@@ -41,8 +41,9 @@ library(microbenchmark)
 ## This code contains the models fitted and samples drawn, without needing to access the data:
 
 ```{r}
-# To load this file back into R:
-setwd("~/Library/CloudStorage/OneDrive-NTNU/Semester_10/BayesianVariableImportance/Animal model example/Models and samples")
+# Access the stored models and samples if you just want to see the results. 
+# The full code to produce plots is given below, and the data and sourcecode can be found under the folder "Animal model source code and data" in the repository.
+setwd("~/Animal model example/Models and samples")
 
 
 model_mass <- readRDS("Models and samples/model_mass_10.05.rds")
