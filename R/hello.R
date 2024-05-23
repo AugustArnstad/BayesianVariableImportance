@@ -689,8 +689,8 @@ plot_samples <- function(samples) {
   if (!is.null(samples$scaled_importance_samples) && dim(samples$scaled_importance_samples)[2] > 0) {
     melted_scaled_importance <- melt(as.data.frame(samples$scaled_importance_samples))
     fixed_effects_plot <- ggplot(melted_scaled_importance, aes(x = value)) +
-      geom_histogram(aes(y = ..density..), fill = "blue", alpha = 0.5) +
-      geom_density(colour = "red", adjust = 1.5) +
+      geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.5) +
+      geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
       labs(title = "Relative Importance of Fixed Effects", x = "Value", y = "Density") +
       theme_minimal() +
       facet_wrap(~ variable, scales = "free_x")
@@ -701,8 +701,8 @@ plot_samples <- function(samples) {
   if (!is.null(samples$scaled_random_samples)) {
     melted_scaled_random <- melt(as.data.frame(samples$scaled_random_samples))
     random_effects_plot <- ggplot(melted_scaled_random, aes(x = value)) +
-      geom_histogram(aes(y = ..density..), fill = "green", alpha = 0.5) +
-      geom_density(colour = "darkgreen", adjust = 1.5) +
+      geom_histogram(aes(y = ..density..), fill = "#C6F7CD", alpha = 0.5) +
+      geom_density(colour = "#E6C6DF", adjust = 1.5) +
       labs(title = "Relative Importance of Random Effects", x = "Value", y = "Density") +
       theme_minimal() +
       facet_wrap(~ variable, scales = "free_x")
