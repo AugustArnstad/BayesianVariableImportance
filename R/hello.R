@@ -691,7 +691,7 @@ plot_samples <- function(samples) {
     fixed_effects_plot <- ggplot(melted_scaled_importance, aes(x = value)) +
       geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.5) +
       geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
-      labs(title = "Relative Importance of Fixed Effects", x = "Value", y = "Density") +
+      labs(title = "Relative Importance of Fixed Effects", x = "Relative importance", y = "Frequency") +
       theme_minimal() +
       facet_wrap(~ variable, scales = "free_x")
     plots$fixed_effects <- fixed_effects_plot
@@ -703,7 +703,7 @@ plot_samples <- function(samples) {
     random_effects_plot <- ggplot(melted_scaled_random, aes(x = value)) +
       geom_histogram(aes(y = ..density..), fill = "#C6F7CD", alpha = 0.5) +
       geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
-      labs(title = "Relative Importance of Random Effects", x = "Value", y = "Density") +
+      labs(title = "Relative Importance of Random Effects", x = "Relative importance", y = "Frequency") +
       theme_minimal() +
       facet_wrap(~ variable, scales = "free_x")
     plots$random_effects <- random_effects_plot
@@ -718,7 +718,7 @@ plot_samples <- function(samples) {
     heritability_plot <- ggplot(samples$heritability, aes(x = !!sym(heritability_colname))) +
       geom_histogram(aes(y = ..density..), fill = "purple", alpha = 0.5) +
       geom_density(color = "purple", adjust = 1.5, linewidth=1.5) +
-      labs(title = paste("Heritability of:", heritability_colname), x = heritability_colname, y = "Density") +
+      labs(title = paste("Heritability of:", heritability_colname), x = heritability_colname, y = "Frequency") +
       theme_minimal()
 
     plots$heritability <- heritability_plot
@@ -738,7 +738,7 @@ plot_samples <- function(samples) {
     R2_plot <- ggplot(R2_long, aes(x = Value, fill = Type)) +
       geom_histogram(aes(y = ..density..), alpha = 0.5, position = "identity") +
       geom_density(colour = "#E6C6DF", alpha = 0.75, adjust = 1.5, linewidth=1.5) +
-      labs(title = "Marginal and Conditional R2", x = "R2 Value", y = "Density") +
+      labs(title = "Marginal and Conditional R2", x = "R2 estimate", y = "Frequency") +
       scale_fill_manual(values = c("R2_marginal" = "#C6CDF7", "R2_conditional" = "#C6F7CD")) +
       theme_minimal() +
       facet_wrap(~ Type, scales = "free_x")
