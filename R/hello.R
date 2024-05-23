@@ -702,7 +702,7 @@ plot_samples <- function(samples) {
     melted_scaled_random <- melt(as.data.frame(samples$scaled_random_samples))
     random_effects_plot <- ggplot(melted_scaled_random, aes(x = value)) +
       geom_histogram(aes(y = ..density..), fill = "#C6F7CD", alpha = 0.5) +
-      geom_density(colour = "#E6C6DF", adjust = 1.5) +
+      geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
       labs(title = "Relative Importance of Random Effects", x = "Value", y = "Density") +
       theme_minimal() +
       facet_wrap(~ variable, scales = "free_x")
@@ -717,7 +717,7 @@ plot_samples <- function(samples) {
     # Dynamically specify the column name in aes() using rlang's sym() and !! for tidy evaluation
     heritability_plot <- ggplot(samples$heritability, aes(x = !!sym(heritability_colname))) +
       geom_histogram(aes(y = ..density..), fill = "purple", alpha = 0.5) +
-      geom_density(color = "purple", adjust = 1.5) +
+      geom_density(color = "purple", adjust = 1.5, linewidth=1.5) +
       labs(title = paste("Heritability of:", heritability_colname), x = heritability_colname, y = "Density") +
       theme_minimal()
 
@@ -737,9 +737,9 @@ plot_samples <- function(samples) {
     # Plot
     R2_plot <- ggplot(R2_long, aes(x = Value, fill = Type)) +
       geom_histogram(aes(y = ..density..), alpha = 0.5, position = "identity") +
-      geom_density(alpha = 0.75, adjust = 1.5) +
+      geom_density(colour = "#E6C6DF", alpha = 0.75, adjust = 1.5, linewidth=1.5) +
       labs(title = "Marginal and Conditional R2", x = "R2 Value", y = "Density") +
-      scale_fill_manual(values = c("R2_marginal" = "blue", "R2_conditional" = "green")) +
+      scale_fill_manual(values = c("R2_marginal" = "#C6CDF7", "R2_conditional" = "#C6F7CD")) +
       theme_minimal() +
       facet_wrap(~ Type, scales = "free_x")
 
