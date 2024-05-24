@@ -43,7 +43,7 @@ library(BayesianVariableImportance)
 ```
 
 ## SIMULATE DATA
-In this part, we simulate data to demonstrate the functionality of the BayesianVariableImportance package. We generate random variables used as fixed effects with different correlation structures and random effects. The data is then structured into data frames for further analysis. If you have a suitable dataset you can use this instead.
+In this part, we simulate data to demonstrate the functionality of the BayesianVariableImportance package. We generate random variables used as fixed effects with different correlation structures and random effects. Note that the coefficients used here are a bit large for the Poisson model, consider lowering them. The data is then structured into data frames for further analysis. If you have a suitable dataset you can use this instead.
 
 ```{r}
 library(remotes)
@@ -115,7 +115,7 @@ simulate_data <- function(n = 10000, n_groups = 100, covariance_level=0) {
 
 
 ## USAGE
-Here we demonstrate the usage of the BayesianVariableImportance package. We fit Bayesian binomial, Poisson and gaussian models and sample posterior distributions for different simulated datasets using functions from the package.
+Here we demonstrate the usage of the BayesianVariableImportance package. We fit Bayesian binomial, Poisson and gaussian models and sample posterior distributions for different simulated datasets using functions from the package. Then, plots are made to display the results.
 ```{r}
 set.seed(1234)
 
@@ -221,8 +221,8 @@ random <- "Z1"
 
 random_plot <- ggplot(samples_pois$scaled_random_samples, aes(x = !!sym(random))) +
   geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
-  geom_density(color = "#E6A0C4", adjust = 1.5, linewidth=1.5) +
-  geom_point(aes(x = mean(samples_pois$scaled_random_samples$Z1), y = 0), color = "#E6A0C4", size = 4) +
+  geom_density(color = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
+  geom_point(aes(x = mean(samples_pois$scaled_random_samples$Z1), y = 0), color = "#E6C6DF", size = 4) +
   labs(#title = paste("Heritability of mass"),
        x = "Samples of relative importance of random effect",
        y = "Frequency") +
@@ -245,7 +245,7 @@ data_long <- samples_pois$scaled_importance_samples %>%
 # Updated plot code
 fixed_plot <- ggplot(data_long, aes(x = Value)) +
   geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
-  geom_density(color = "#E6A0C4", adjust = 1.5, linewidth=1.5) +
+  geom_density(color = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
   facet_wrap(~ Variable, scales = "free_x") +
   labs(x = "Samples of relative importance of random effect",
        y = "Frequency") +
@@ -273,7 +273,7 @@ r2_plot <- ggplot(r2_long, aes(x = Value, fill = R2_Type)) +
   geom_histogram(aes(y = ..density..), alpha = 0.7, bins = 40, color = "black") +
   geom_density(adjust = 1.5, color = "black", alpha = 0.7) +
   labs(x = "R2 Values", y = "Density") +
-  scale_fill_manual(values = c("Marginal_R2" = "#C6CDF7", "Conditional_R2" = "#E6A0C4")) +
+  scale_fill_manual(values = c("Marginal_R2" = "#C6CDF7", "Conditional_R2" = "#E6C6DF")) +
   theme_minimal() +
   theme(legend.title = element_blank(),
         legend.position = "top",

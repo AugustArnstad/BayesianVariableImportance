@@ -176,8 +176,9 @@ heritability_data_poisson <- pois_glm_samples$scaled_random_samples
 # Create the ggplot histogram with a density overlay
 heritability_poisson <- ggplot(heritability_data_poisson, aes(x = Population)) +
   geom_histogram(aes(y = ..density..), fill = "#C6CDF7", bins = 30, alpha = 0.7, color = "black") +
-  geom_density(color = "#E6A0C4", adjust = 1.5, linewidth = 1) +
+  geom_density(color = "#E6C6DF", adjust = 1.5, linewidth = 1.5) +
   geom_vline(aes(xintercept = stoffel_heritability_poisson), color = "orange", linetype = "dashed", size = 1) +
+  geom_point(aes(x = mean(heritability_data_poisson$Population), y = 0), color = "#E6C6DF", size = 4) +
   labs(#title = "Distribution of Heritability of Population", 
        x = "Heritability", 
        y = "Density") +
@@ -264,8 +265,9 @@ heritability_data_binomial <- bin_glm_samples$scaled_random_samples
 # Create the ggplot histogram with a density overlay
 heritability_binomial <- ggplot(heritability_data_binomial, aes(x = Population)) +
   geom_histogram(aes(y = ..density..), fill = "#C6CDF7", bins = 30, alpha = 0.7, color = "black") +
-  geom_density(color = "#E6A0C4", adjust = 1.5, linewidth = 1) +
+  geom_density(color = "#E6C6DF", adjust = 1.5, linewidth = 1.5) +
   geom_vline(aes(xintercept = stoffel_heritability_binomial), color = "orange", linetype = "dashed", size = 1) +
+  geom_point(aes(x = mean(heritability_data_binomial$Population), y = 0), color = "#E6C6DF", size = 4) +
   labs(#title = "Distribution of Heritability of Population", 
        x = "Heritability", 
        y = "Density") +

@@ -60,11 +60,16 @@ simulate_data <- function(n = 10000, n_groups = 100, covariance_level=0) {
   # Simulate random effects groups
   Z1 <- sample(1:n_groups, n, replace = TRUE)
   random_effect_contributions_z1 <- rnorm(n_groups, mean = 0, sd = 1)[Z1]
+  random_effect_contributions_z1_pois <- rnorm(n_groups, mean = 0, sd = sqrt(1/7))[Z1]
 
   # Coefficients for fixed effects
   beta1 <- 1
   beta2 <- sqrt(2)
   beta3 <- sqrt(3)
+  
+  beta1_pois <- 1/sqrt(7)
+  beta2_pois <- sqrt(2)/sqrt(7)
+  beta3_pois <- sqrt(3)/sqrt(7)
 
   # Linear predictor
   eta <- beta1*X1 + beta2*X2 + beta3*X3 + random_effect_contributions_z1
@@ -80,7 +85,8 @@ simulate_data <- function(n = 10000, n_groups = 100, covariance_level=0) {
   data_probit <- data.frame(y_probit_bin, X1, X2, X3, Z1)
 
   # Poisson with log link
-  lambda <- exp(eta)
+  eta_pois <- beta1_pois*X1 + beta2_pois*X2 + beta3_pois*X3 + random_effect_contributions_z1_pois
+  lambda <- exp(eta_pois)
   y_pois <- rpois(n, lambda = lambda)
   data_poisson <- data.frame(y_pois, X1, X2, X3, Z1)
   
@@ -450,12 +456,12 @@ extract_averages_and_quantiles <- function(sim_data, model) {
     quantile_r2m = quantile_r2m,
     average_r2c = average_r2c,
     quantile_r2c = quantile_r2c,
-    average_expected_importance = average_expected_importance,
-    quantile_expected_importance = quantile_expected_importance,
-    average_expected_r2m = average_expected_r2m,
-    quantile_expected_r2m = quantile_expected_r2m,
-    average_expected_r2c = average_expected_r2c,
-    quantile_expected_r2c = quantile_expected_r2c
+    #average_expected_importance = average_expected_importance,
+    #quantile_expected_importance = quantile_expected_importance,
+    #average_expected_r2m = average_expected_r2m,
+    #quantile_expected_r2m = quantile_expected_r2m,
+    #average_expected_r2c = average_expected_r2c,
+    #quantile_expected_r2c = quantile_expected_r2c
   )
 }
 
@@ -537,32 +543,6 @@ num_failures_pois_high_pos <- count_failures(loaded_sim_high_pos$successes, "poi
 print(paste("Number of failed logit simulations:", num_failures_pois_high_pos))
 num_failures_pois_high_neg <- count_failures(loaded_sim_high_neg$successes, "poisson")
 print(paste("Number of failed logit simulations:", num_failures_pois_high_neg))
-
-
-for (i in 1:416){
-  if (success_high_pos_pois[[i]]$poisson$fixed_importance[1] <= 0.05){
-    print(success_high_pos_pois[[i]]$poisson$fixed_importance[1])
-  }
-}
-
-
-for (i in 1:416){
-  if (success_high_pos_pois[[i]]$poisson$fixed_importance[2] <= 0.05){
-    print(success_high_pos_pois[[i]]$poisson$fixed_importance[2])
-  }
-}
-
-for (i in 1:416){
-  if (success_high_pos_pois[[i]]$poisson$fixed_importance[3] <= 0.05){
-    print(success_high_pos_pois[[i]]$poisson$fixed_importance[3])
-  }
-}
-
-for (i in 1:416){
-  if (success_high_pos_pois[[i]]$poisson$random_importance >= 0.4){
-    print(success_high_pos_pois[[i]]$poisson$random_importance)
-  }
-}
 
 ```
 
@@ -787,7 +767,7 @@ plot_fixed_importances <- function(data, model_name, cov_level=0) {
     geom_histogram(bins = 75, fill = fill_color, alpha = 0.7) +
     #facet_wrap(~ FixedEffect, scales = "free") +
     facet_wrap(~ Correlation, scales = "free", labeller =as_labeller(appender, default = label_parsed)) +
-    geom_vline(aes(xintercept = ExpectedImportance), color = "green", linetype = "solid", linewidth = 1) +
+    geom_vline(aes(xintercept = ExpectedImportance), color = "green", linetype = "dashed", linewidth = 1) +
     geom_point(data = means, aes(x = Mean, y = 0, fill = FixedEffect), shape = 21, size = 3, color = "black", show.legend = F) +
     labs(#title = paste(title_prefix, "Fixed Effect Importances with Expected Importances"),
          x = "Fixed Effect Importance", y = "Frequency") +

@@ -79,16 +79,16 @@ CI_mass <- quantile(samples_mass$scaled_random_samples$IDC2, c(0.025, 0.975))
 # Dynamically specify the column name in aes() using rlang's sym() and !! for tidy evaluation
 heritability_mass <- ggplot(samples_mass$scaled_random_samples, aes(x = !!sym(additive_genetic))) +
   geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
-  geom_density(color = "#E6A0C4", adjust = 1.5, linewidth=1.5) +
+  geom_density(color = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
   #geom_point(aes(x = mean(samples_mass$scaled_random_samples$IDC2), y = 0), color = "#E6A0C4", size = 4) +
   #geom_point(aes(x = mean(silva_mass), y = 0), color = "#FFD700", size = 4) +
   #geom_point(aes(x = mean(muff_mass), y = 0), color = "#32CD32", size = 4) +
-  annotate("point", x = mean(samples_mass$scaled_random_samples$IDC2), y = 0, color = "#E6A0C4", size = 4) +
+  annotate("point", x = mean(samples_mass$scaled_random_samples$IDC2), y = 0, color = "#E6C6DF", size = 4) +
   annotate("point", x = median(samples_mass$scaled_random_samples$IDC2), y = 0, color = "grey", size = 4) +
   annotate("point", x = mean(silva_mass), y = 0, color = "#FFD700", size = 4) +
   annotate("point", x = mean(muff_mass), y = 0, color = "#32CD32", size = 4) +
-  geom_vline(aes(xintercept = CI_mass[1]), color = "#E6A0C4", linewidth = 1, linetype = "dashed") +
-  geom_vline(aes(xintercept = CI_mass[2]), color = "#E6A0C4", linewidth = 1, linetype = "dashed") +
+  geom_vline(aes(xintercept = CI_mass[1]), color = "#E6C6DF", linewidth = 1, linetype = "dashed") +
+  geom_vline(aes(xintercept = CI_mass[2]), color = "#E6C6DF", linewidth = 1, linetype = "dashed") +
   labs(#title = paste("Heritability of mass"),
        x = "Samples of heritability",
        y = "Frequency") +
@@ -122,16 +122,16 @@ CI_wing <- quantile(samples_wing$scaled_random_samples$IDC2, c(0.025, 0.975))
 # Dynamically specify the column name in aes() using rlang's sym() and !! for tidy evaluation
 heritability_wing <- ggplot(samples_wing$scaled_random_samples, aes(x = !!sym(additive_genetic))) +
   geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
-  geom_density(color = "#E6A0C4", adjust = 1.5, linewidth=1.5) +
+  geom_density(color = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
   #geom_point(aes(x = mean(samples_wing$scaled_random_samples$IDC2), y = 0), color = "#E6A0C4", size = 4) +
   #geom_point(aes(x = mean(silva_wing), y = 0), color = "#FFD700", size = 4) +
   #geom_point(aes(x = mean(muff_wing), y = 0), color = "#32CD32", size = 4) +
-  annotate("point", x = mean(samples_wing$scaled_random_samples$IDC2), y = 0, color = "#E6A0C4", size = 4) +
+  annotate("point", x = mean(samples_wing$scaled_random_samples$IDC2), y = 0, color = "#E6C6DF", size = 4) +
   annotate("point", x = median(samples_wing$scaled_random_samples$IDC2), y = 0, color = "grey", size = 4) +
   annotate("point", x = mean(silva_wing), y = 0, color = "#FFD700", size = 4) +
   annotate("point", x = mean(muff_wing), y = 0, color = "#32CD32", size = 4) +
-  geom_vline(aes(xintercept = CI_wing[1]), color = "#E6A0C4", linewidth = 1, linetype = "dashed") +
-  geom_vline(aes(xintercept = CI_wing[2]), color = "#E6A0C4", linewidth = 1, linetype = "dashed") +
+  geom_vline(aes(xintercept = CI_wing[1]), color = "#E6C6DF", linewidth = 1, linetype = "dashed") +
+  geom_vline(aes(xintercept = CI_wing[2]), color = "#E6C6DF", linewidth = 1, linetype = "dashed") +
   labs(#title = paste("Heritability of wing"), 
        x = "Samples of heritability", 
        y = "Frequency") +
@@ -167,14 +167,14 @@ CI_tarsus <- quantile(samples_tarsus$scaled_random_samples$IDC2, c(0.025, 0.975)
 # Dynamically specify the column name in aes() using rlang's sym() and !! for tidy evaluation
 heritability_tarsus <- ggplot(samples_tarsus$scaled_random_samples, aes(x = !!sym(additive_genetic))) +
   geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
-  geom_density(color = "#E6A0C4", adjust = 1.5, linewidth=1.5) +
+  geom_density(color = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
   #geom_point(aes(x = mean(samples_tarsus$scaled_random_samples$IDC2), y = 0), color = "#E6A0C4", size = 4) +
   #geom_point(aes(x = mean(silva_tarsus), y=0), color = "#FFD700", size = 4) +
-  annotate("point", x = mean(samples_tarsus$scaled_random_samples$IDC2), y = 0, color = "#E6A0C4", size = 4) +
+  annotate("point", x = mean(samples_tarsus$scaled_random_samples$IDC2), y = 0, color = "#E6C6DF", size = 4) +
   annotate("point", x = median(samples_tarsus$scaled_random_samples$IDC2), y = 0, color = "grey", size = 4) +
   annotate("point", x = mean(silva_tarsus), y = 0, color = "#FFD700", size = 4) +
-  geom_vline(aes(xintercept = CI_tarsus[1]), color = "#E6A0C4", linewidth = 1, linetype = "dashed") +
-  geom_vline(aes(xintercept = CI_tarsus[2]), color = "#E6A0C4", linewidth = 1, linetype = "dashed") +
+  geom_vline(aes(xintercept = CI_tarsus[1]), color = "#E6C6DF", linewidth = 1, linetype = "dashed") +
+  geom_vline(aes(xintercept = CI_tarsus[2]), color = "#E6C6DF", linewidth = 1, linetype = "dashed") +
   labs(#title = paste("Heritability of tarsus"), 
        x = "Samples of heritability", 
        y = "Frequency") +
