@@ -110,6 +110,8 @@ extract_effects <- function(formula) {
 #' @param family The model family (e.g., "binomial", "poisson").
 #' @param priors Optional list of prior specifications for model parameters.
 #' @param link_func A link function to be used in the model (e.g., "identity", "logit").
+#' @param inla_strat Decides the strategy to approximate marginals by. Simplified Laplace is default
+#' @param int_strat Decides the integration strategy for numerical intergrations with INLA. Default is auto, grid for hyperparameters of dimension 2 or less, CCD otherwise
 #' @return An object of class `inla` representing the fitted model.
 #' @examples
 #' data <- data_binomial # Assuming data_binomial is available
@@ -134,11 +136,6 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", i
     )
   }
 
-  #formula_str <- deparse(formula)
-
-  #simplified_formula <- gsub("f\\([^()]*\\)", "", formula_str)
-  #simplified_vars <- strsplit(simplified_formula, "[ ~+]+")[[1]]
-  #simplified_vars <- simplified_vars[2:(length(simplified_vars)-1)]
 
   effects <- extract_effects(formula)
   fixed_effects <- effects$fixed_effects
@@ -153,11 +150,7 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", i
   }
 
   scaled <- scale(data_copy[, response])
-  #data_copy[, response] <- scaled
 
-  # Process priors to include them in the formula if needed
-  # This is a simplified example; actual implementation may need to adjust
-  # based on how priors are specified and used in your formula
 
   # Fit the model using INLA
   inla_result <- inla(formula,
@@ -167,7 +160,6 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", i
                       control.inla = list(strategy = inla_strat, int.strategy=int_strat),
                       control.compute = list(dic = FALSE, return.marginals=TRUE, config=TRUE, waic = TRUE))
 
-  #inla_result$summary.fitted.values$descaled <- inla_result$summary.fitted.values$mean*attr(scaled, 'scaled:scale') + attr(scaled, 'scaled:center')
 
   # Return the INLA result object
   return(inla_result)
@@ -292,9 +284,6 @@ extract_importances <- function(model, data, random_names, fixed_names, dist_fac
     residual_importance = residual_imp,
     r2m = r2m,
     r2c = r2c
-    #expected_importance = 1 / (dist_factor + sum(1:length(random_names)) + sum(1:length(fixed_names)) + residual_var + 1),
-    #expected_r2m = sum(1:length(fixed_names)) / (dist_factor + sum(1:length(random_names)) + sum(1:length(fixed_names)) + residual_var + 1),
-    #expected_r2c = (sum(1:length(fixed_names)) + sum(1:length(random_names)) + residual_var) / (dist_factor + sum(1:length(random_names)) + sum(1:length(fixed_names)) + residual_var + 1)
   ))
 }
 
@@ -314,9 +303,6 @@ extract_importances <- function(model, data, random_names, fixed_names, dist_fac
 #' samples <- sample_posterior_gaussian(result, formula, data_binomial, n_samp = 100)
 #' @export
 sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additive_param=NULL, repeatability = FALSE) {
-
-  # Make the param_of_interest a general input object for all functions. That was a nice way to put it
-
 
   response <- all.vars(formula)[1]
   scaled_response <- scale(data[, response])
@@ -345,12 +331,9 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
   }
 
 
-  #random <- names(variance_marginals_list)
   random <- gsub("Precision for the ", "", random)
   random <- gsub("Precision for ", "", random)
-  # random <- names(variance_marginals_list)
-  # random <- gsub("Precision for the ", "", random)
-  # random <- gsub("Precision for ", "", random)
+
 
   sum <- summary(model)
   iidkd_indices <- which(sum$random.model == "IIDKD model")
@@ -506,7 +489,6 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
 #' @export
 sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_param=NULL, repeatability = FALSE) {
 
-  # Make the param_of_interest a general input object for all functions. That was a nice way to put it
 
   response <- all.vars(formula)[1]
   scaled_response <- scale(data[, response])
@@ -601,8 +583,6 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
       }
     }else if (fam == "poisson"){
       if (link == "log"){
-        # intercept <- samps_Z[[i]]$latent[output_length-length(fixed)]
-        # distribution_var <- log((1/exp(intercept)) + 1)
         intercept <- samps_Z[[i]]$latent[output_length-length(fixed)]
         lambda_pois <- exp(intercept + 0.5*total_latent_var)
         distribution_var <- log(1 + 1/lambda_pois)
@@ -653,7 +633,6 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
   names(R2_cond) <- "Conditional R2"
 
   if (!is.null(additive_param) && repeatability){
-    #h2_mat <- random_mat[, additive_param]/(rowSums(importance_mat) + rowSums(random_mat) + distribution_var)
     repeat_mat <- random_mat[, additive_param]/(rowSums(random_mat))
     repeat_mat <- as.data.frame(repeat_mat)
     names(repeat_mat) <- paste0("Repeatability of: ", additive_param)
@@ -714,8 +693,6 @@ plot_samples <- function(samples) {
   if (!is.null(samples$heritability) && any(!is.na(samples$heritability))) {
     # Extract the actual column name for heritability
     heritability_colname <- names(samples$heritability)
-
-    # Dynamically specify the column name in aes() using rlang's sym() and !! for tidy evaluation
     heritability_plot <- ggplot(samples$heritability, aes(x = !!sym(heritability_colname))) +
       geom_histogram(aes(y = ..density..), fill = "purple", alpha = 0.5) +
       geom_density(color = "purple", adjust = 1.5, linewidth=1.5) +
