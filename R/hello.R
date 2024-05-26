@@ -235,9 +235,9 @@ extract_importances <- function(model, data, random_names, fixed_names, dist_fac
       } else if (link == "logit"){
 
         #Testing 26.05.24
-        intercept <- model$summary.fixed["(Intercept)", "mean"]
-        dist_factor <- stats::plogis(intercept*sqrt(1+((16*sqrt(3))/(15*pi))^2*(sum(imp_random)+sum(imp_fixed)))^-1)
-        #dist_factor <- pi^2/3
+        #intercept <- model$summary.fixed["(Intercept)", "mean"]
+        #dist_factor <- stats::plogis(intercept*sqrt(1+((16*sqrt(3))/(15*pi))^2*(sum(imp_random)+sum(imp_fixed)))^-1)
+        dist_factor <- pi^2/3
 
 
         # I think this could be difficult to implement. Ask Steffi.
