@@ -233,7 +233,12 @@ extract_importances <- function(model, data, random_names, fixed_names, dist_fac
       if (link == "probit"){
         dist_factor <- 1
       } else if (link == "logit"){
-        dist_factor <- pi^2/3
+
+        #Testing 26.05.24
+        intercept <- model$summary.fixed["(Intercept)", "mean"]
+        dist_factor <- stats::plogis(intercept*sqrt(1+((16*sqrt(3))/(15*pi))^2*(sum(imp_random)+sum(imp_fixed)))^-1)
+        #dist_factor <- pi^2/3
+
 
         # I think this could be difficult to implement. Ask Steffi.
 
@@ -245,7 +250,9 @@ extract_importances <- function(model, data, random_names, fixed_names, dist_fac
     }else if (fam == "poisson"){
       if (link == "log"){
         intercept <- model$summary.fixed["(Intercept)", "mean"]
-        lambda_pois <- exp(intercept + 0.5*sum(imp_random))
+        #Testing 26.05.24
+        lambda_pois <- exp(intercept + 0.5*(sum(imp_random) + sum(imp_fixed)))
+        #lambda_pois <- exp(intercept + 0.5*sum(imp_random))
         dist_factor <- log(1 + 1/lambda_pois)
       }else if (link == "root"){
         dist_factor <- 0.25
