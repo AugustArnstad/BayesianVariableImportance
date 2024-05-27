@@ -148,27 +148,19 @@ model_normal <- BayesianVariableImportance::perform_inla_analysis(datasets$norma
 
 
 imp_logit <- BayesianVariableImportance::extract_importances(model = model_logit, 
-                                                  data = datasets$binomial_logit,
-                                                  random_names=c("Z1"), 
-                                                  fixed_names=c("X1", "X2", "X3"))
+                                                  data = datasets$binomial_logit)
 
 
 imp_pois <- BayesianVariableImportance::extract_importances(model_pois, 
-                                datasets$poisson,
-                                random_names=c("Z1"), 
-                                fixed_names=c("X1", "X2", "X3"))
+                                datasets$poisson)
 
 #One can also use the dist_factor argument to specify the distribution factor one wishes to use
 imp_pois_2 <- BayesianVariableImportance::extract_importances(model_pois, 
                                 datasets$poisson,
-                                random_names=c("Z1"), 
-                                fixed_names=c("X1", "X2", "X3"),
                                 dist_factor = log(1 + 1/exp(summary(model_pois)$fixed[1] + 0.5)))
 
 
-imp_lmm <- BayesianVariableImportance::extract_importances(model_normal, datasets$normal,
-                                random_names=c("Z1"), 
-                                fixed_names=c("X1", "X2", "X3"))
+imp_lmm <- BayesianVariableImportance::extract_importances(model_normal, datasets$normal)
 
 
 samples_logit <- BayesianVariableImportance::sample_posterior_count(model_logit, glmm_logit, datasets$binomial_logit, n_samp=5000, additive_param = "Z1")
@@ -178,9 +170,6 @@ samples_lmm <- BayesianVariableImportance::sample_posterior_gaussian(model_norma
 plots_logit <- BayesianVariableImportance::plot_samples(samples_logit)
 plots_pois <- BayesianVariableImportance::plot_samples(samples_pois)
 plots_lmm <- BayesianVariableImportance::plot_samples(samples_lmm)
-
-
-
 ```
 
 ## IMPORTANCES
