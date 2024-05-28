@@ -201,6 +201,7 @@ sd(samples_tarsus$scaled_random_samples$IDC2)#/sqrt(length(samples_tarsus$scaled
 
 ```{r, echo = FALSE, eval = FALSE}
 # Add your path to the source code file here:
+setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/BayesianVariableImportance/Animal model example")
 setwd("~/BayesianVariableImportance/Animal model example")
 source("../Animal model source code and data/DataPrep.R")
 str(d.morph)
