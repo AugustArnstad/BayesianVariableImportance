@@ -40,7 +40,6 @@ library(microbenchmark)
 
 data("d.morph")
 data("Cmatrix")
-
 ```
 
 ## This code contains the models fitted and samples drawn, without needing to access the data:
@@ -207,27 +206,10 @@ data("d.morph")
 data("Cmatrix")
 
 str(d.morph)
-```
-
-```{r, echo = FALSE, eval = FALSE}
-set.seed(1)
-AA <- solve(Ainv$Ainv)
-# Some trick to make the thing numerically stable, because the inversion leads to some tiny non-zero values that are artefacts of the inversion...:
-AA <- round(AA,8)
-AA[AA==0] <- 0
-# Final A-matrix:
-AAA <- AA[d.map[1:3116,2],d.map[1:3116,2]]
-#
-isSymmetric(AAA)
-# A-matrix needs to be inverted to be used in INLA:
-Cmatrix <- solve(AAA)
-# Again, to correct for some numerical instability, we set values <10^{-4} to 0
-Cmatrix <- round(Cmatrix,4)
-Cmatrix[Cmatrix==0] <- 0
 library(Matrix)
 isSymmetric(Cmatrix)
-
 ```
+
 
 ```{r}
 formula.mass = mass ~ sex + FGRM + month + age + outer + other +
@@ -284,7 +266,7 @@ timing_result_mass <- microbenchmark(
   {
     model_mass <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.mass, "gaussian", priors = prior_mass)
 
-    samples_mass <- BayesianVariableImportance::sample_posterior_gaussian(model_mass, formula.mass, d.morph, n_samp=10000, additive_param = "IDC2")
+    samples_mass <- BayesianVariableImportance::sample_posterior_gaussian(model_mass, formula.mass, d.morph, n_samp=100, additive_param = "IDC2")
   },
   times = 1  # Number of times to run the chunk for better accuracy
 )

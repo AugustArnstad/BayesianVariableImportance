@@ -30,7 +30,7 @@
 #'   \item{IDC4}{int: IDC4 value}
 #' }
 #' @source Data from sparrows on the Helgeland coast, Norway
-"d.morph_no_ringnr"
+"d.morph"
 
 #' Cmatrix: Inverse of the Relatedness Matrix A
 #'
