@@ -583,8 +583,6 @@ gdr_r2_data <- bind_rows(
 r2_data <- bind_rows(r2d2_r2_data, bvi_r2_data, gdr_r2_data)
 
 # Define shapes for LMG points
-# shape <- c("LMG Estimate" = 18, "LMG Lower Bound" = 24, "LMG Upper Bound" = 25)
-# colors <- c("LMG Estimate" = "#32CD32", "LMG Lower Bound" = "grey", "LMG Upper Bound" = "grey")
 shape <- c("LMG" = 18)
 colors <- c("LMG" = "#EF5350")
 
@@ -593,8 +591,6 @@ r2_plot <- ggplot(r2_data, aes(x = factor(Correlation), y = R2, fill = Method)) 
   geom_boxplot(alpha = 0.6, outlier.color = NA) +
   coord_cartesian(ylim=c(0.5, 1)) +
   geom_point(data = lmg_r2_data, aes(x = factor(Correlation), y = R2, shape = "LMG", color = "LMG"), size = 4) +
-  #geom_point(data = lmg_r2_data, aes(x = factor(Correlation), y = Lower, shape = "LMG Lower Bound", color = "LMG Lower Bound"), size = 2) +
-  #geom_point(data = lmg_r2_data, aes(x = factor(Correlation), y = Upper, shape = "LMG Upper Bound", color = "LMG Upper Bound"), size = 2) +
   theme_minimal() +
   theme(
     strip.text.x = element_blank(),
@@ -615,13 +611,3 @@ r2_plot
 
 
 
-# Saving plots -----------------------------------------------------------
-
-plot_folder <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/Master/Latex/Figures/R2D2_BVI_Comparison"
-
-# Check if the folder exists, if not, create it
-if (!dir.exists(plot_folder)) {
-  dir.create(plot_folder)
-}
-ggsave(filename="R2D2_BVI_boxplot.png", plot=r2d2_bvi_boxplot, path=plot_folder, width = 10, height = 10, dpi = 500)
-ggsave(filename="R2D2_BVI_R2_plot.png", plot=r2_plot, path=plot_folder, width = 10, height = 10, dpi = 500)

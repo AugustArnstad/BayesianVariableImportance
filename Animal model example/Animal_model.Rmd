@@ -44,7 +44,9 @@ library(microbenchmark)
 
 ```{r}
 # Access the stored models and samples if you just want to see the results. 
-# The full code to produce plots is given below, and the data and sourcecode can be found under the folder "Animal model source code and data" in the repository.
+# The code with the original data used in the thesis is found further down below.
+
+setwd("/your/desired/path/BayesianVariableImportance/Animal model example")
 
 model_mass <- readRDS("Models and samples/model_mass_10.05.rds")
 samples_mass <- readRDS("Models and samples/samples_mass_10.05.rds")
@@ -80,9 +82,6 @@ CI_mass <- quantile(samples_mass$scaled_random_samples$IDC2, c(0.025, 0.975))
 heritability_mass <- ggplot(samples_mass$scaled_random_samples, aes(x = !!sym(additive_genetic))) +
   geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
   geom_density(color = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
-  #geom_point(aes(x = mean(samples_mass$scaled_random_samples$IDC2), y = 0), color = "#E6A0C4", size = 4) +
-  #geom_point(aes(x = mean(silva_mass), y = 0), color = "#FFD700", size = 4) +
-  #geom_point(aes(x = mean(muff_mass), y = 0), color = "#32CD32", size = 4) +
   annotate("point", x = mean(samples_mass$scaled_random_samples$IDC2), y = 0, color = "#E6C6DF", size = 4) +
   annotate("point", x = median(samples_mass$scaled_random_samples$IDC2), y = 0, color = "grey", size = 4) +
   annotate("point", x = mean(silva_mass), y = 0, color = "#FFD700", size = 4) +
@@ -99,13 +98,7 @@ heritability_mass <- ggplot(samples_mass$scaled_random_samples, aes(x = !!sym(ad
     axis.text.x = element_text(size = 24),
     axis.text.y = element_text(size = 24)
     ) 
-# theme(
-#   plot.background = element_rect(fill = "white"),
-#   #panel.grid.major = element_blank(),
-#   #panel.grid.minor = element_blank(),
-#   text = element_text(size = 12, family = "Arial"),
-#   axis.text.x = element_text(angle = 45, hjust = 1)
-# )
+
 
 heritability_mass
 
@@ -123,9 +116,6 @@ CI_wing <- quantile(samples_wing$scaled_random_samples$IDC2, c(0.025, 0.975))
 heritability_wing <- ggplot(samples_wing$scaled_random_samples, aes(x = !!sym(additive_genetic))) +
   geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
   geom_density(color = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
-  #geom_point(aes(x = mean(samples_wing$scaled_random_samples$IDC2), y = 0), color = "#E6A0C4", size = 4) +
-  #geom_point(aes(x = mean(silva_wing), y = 0), color = "#FFD700", size = 4) +
-  #geom_point(aes(x = mean(muff_wing), y = 0), color = "#32CD32", size = 4) +
   annotate("point", x = mean(samples_wing$scaled_random_samples$IDC2), y = 0, color = "#E6C6DF", size = 4) +
   annotate("point", x = median(samples_wing$scaled_random_samples$IDC2), y = 0, color = "grey", size = 4) +
   annotate("point", x = mean(silva_wing), y = 0, color = "#FFD700", size = 4) +
@@ -142,13 +132,7 @@ heritability_wing <- ggplot(samples_wing$scaled_random_samples, aes(x = !!sym(ad
     axis.text.x = element_text(size = 24),
     axis.text.y = element_text(size = 24)
     ) 
-# theme(
-#   plot.background = element_rect(fill = "white"),
-#   #panel.grid.major = element_blank(),
-#   #panel.grid.minor = element_blank(),
-#   text = element_text(size = 12, family = "Arial"),
-#   axis.text.x = element_text(angle = 45, hjust = 1)
-# )
+
 
 heritability_wing
 
@@ -168,8 +152,6 @@ CI_tarsus <- quantile(samples_tarsus$scaled_random_samples$IDC2, c(0.025, 0.975)
 heritability_tarsus <- ggplot(samples_tarsus$scaled_random_samples, aes(x = !!sym(additive_genetic))) +
   geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
   geom_density(color = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
-  #geom_point(aes(x = mean(samples_tarsus$scaled_random_samples$IDC2), y = 0), color = "#E6A0C4", size = 4) +
-  #geom_point(aes(x = mean(silva_tarsus), y=0), color = "#FFD700", size = 4) +
   annotate("point", x = mean(samples_tarsus$scaled_random_samples$IDC2), y = 0, color = "#E6C6DF", size = 4) +
   annotate("point", x = median(samples_tarsus$scaled_random_samples$IDC2), y = 0, color = "grey", size = 4) +
   annotate("point", x = mean(silva_tarsus), y = 0, color = "#FFD700", size = 4) +
@@ -197,7 +179,7 @@ sd(samples_tarsus$scaled_random_samples$IDC2)#/sqrt(length(samples_tarsus$scaled
 ```
 
 
-## The below code is made with the data d.morph used in the thesis. A pedigree structure is inialized and the corresponding inverse relatedness matrix is called Cmatrix. 
+## The below code is made with the data d.morph used in the thesis. A pedigree structure is inialized and the corresponding inverse relatedness matrix is called Cmatrix. Note that the thesis used both integration strategies, but the user can make the choice of prefered integration strategy.
 
 ```{r, echo = FALSE, eval = FALSE}
 data("d.morph")
@@ -262,9 +244,9 @@ prior_mass = list(theta = list(initial=log(0.5),  prior="pc.prec",param=c(sqrt(2
 
 timing_result_mass <- microbenchmark(
   {
-    model_mass <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.mass, "gaussian", priors = prior_mass)
+    model_mass <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.mass, "gaussian", int_strat="ccd", priors = prior_mass)
 
-    samples_mass <- BayesianVariableImportance::sample_posterior_gaussian(model_mass, formula.mass, d.morph, n_samp=100, additive_param = "IDC2")
+    samples_mass <- BayesianVariableImportance::sample_posterior_gaussian(model_mass, formula.mass, d.morph, n_samp=10000, additive_param = "IDC2")
   },
   times = 1  # Number of times to run the chunk for better accuracy
 )
@@ -315,7 +297,7 @@ prior_tarsus = list(theta = list(initial=log(0.5),  prior="pc.prec",param=c(sqrt
 
 timing_result_tarsus <- microbenchmark(
   {
-      model_tarsus <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.tarsus, "gaussian", priors = prior_tarsus)
+      model_tarsus <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.tarsus, "gaussian", int_strat="ccd", priors = prior_tarsus)
 
       samples_tarsus <- BayesianVariableImportance::sample_posterior_gaussian(model_tarsus, formula.tarsus, d.morph, n_samp=10000, additive_param = "IDC2")
   },
@@ -340,7 +322,7 @@ dim(d.morph)
 
 ```{r}
 # Saving the entire loaded_sim_no$successes object as an RDS file
-setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/R kladd/Animal model results")
+setwd("/your/desired/path/Animal model results")
 
 saveRDS(model_mass, "model_mass_10.05.rds")
 saveRDS(samples_mass, "samples_mass_10.05.rds")
@@ -353,20 +335,3 @@ saveRDS(samples_tarsus, "samples_tarsus_10.05.rds")
 ```
 
 
-
-
-```{r}
-set.seed(1)
-setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/Master/Latex/Figures")
-plot_folder <- "House sparrow study"
-
-# Check if the folder exists, if not, create it
-if (!dir.exists(plot_folder)) {
-  dir.create(plot_folder)
-}
-
-ggsave(filename="Heritability_mass.png", plot=heritability_mass, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="Heritability_wing.png", plot=heritability_wing, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="Heritability_tarsus.png", plot=heritability_tarsus, path=plot_folder, width = 10, height = 6, dpi = 300)
-
-```

@@ -72,8 +72,6 @@ simulate_data <- function(n = 10000, n_groups = 100, covariance_level=0) {
   # Simulate random effects groups
   Z1 <- sample(1:n_groups, n, replace = TRUE)
   random_effect_contributions_z1 <- rnorm(n_groups, mean = 0, sd = 1)[Z1]
-  # Z2 <- sample(1:(n_groups/10), n, replace = TRUE)
-  # random_effect_contributions_z2 <- rnorm(n_groups/10, mean = 0, sd = 1)[Z2]
 
   # Coefficients for fixed effects
   beta1 <- 1

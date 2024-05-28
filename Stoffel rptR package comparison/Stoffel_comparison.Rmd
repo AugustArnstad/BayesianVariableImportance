@@ -203,13 +203,10 @@ stoffel_heritability_poisson
 ```{r}
 library(dplyr)
 
-names(gauss_1_glm_samples$heritability)
-
-heritability_data_gauss_1 <- gauss_1_glm_samples$heritability %>%
-  rename(Heritability = `Heritability of: Population`)
+heritability_data_gauss_1 <- gauss_1_glm_samples$scaled_random_samples
 
 # Create the ggplot histogram with a density overlay
-heritability_gauss_1 <- ggplot(heritability_data_gauss_1, aes(x = Heritability)) +
+heritability_gauss_1 <- ggplot(heritability_data_gauss_1, aes(x = Population)) +
   geom_histogram(aes(y = ..density..), fill = "#C6CDF7", bins = 30, alpha = 0.7) +
   geom_density(color = "#E6A0C4", adjust = 1.5, linewidth = 1) +
   geom_vline(aes(xintercept = stoffel_heritability_gauss_1), color = "orange", linetype = "dashed", size = 1) +
@@ -230,11 +227,10 @@ stoffel_heritability_gauss_1
 
 ```{r}
 library(dplyr)
-heritability_data_gauss_2 <- gauss_2_glm_samples$heritability %>%
-  rename(Heritability = `Heritability of: Container`)
+heritability_data_gauss_2 <- gauss_2_glm_samples$scaled_random_samples
 
 # Create the ggplot histogram with a density overlay
-heritability_gauss_2 <- ggplot(heritability_data_gauss_2, aes(x = Heritability)) +
+heritability_gauss_2 <- ggplot(heritability_data_gauss_2, aes(x = Population)) +
   geom_histogram(aes(y = ..density..), fill = "#C6CDF7", bins = 30, alpha = 0.7, color = "black") +
   geom_density(color = "#E6A0C4", adjust = 1.5, linewidth = 1) +
   geom_vline(aes(xintercept = stoffel_heritability_gauss_2), color = "orange", linetype = "dashed", size = 1) +
@@ -256,9 +252,6 @@ heritability_gauss_2
 
 ```{r}
 library(dplyr)
-
-# heritability_data_binomial <- bin_glm_samples$heritability %>%
-#   rename(Heritability = `Heritability of: Population`)
 
 heritability_data_binomial <- bin_glm_samples$scaled_random_samples
 
@@ -288,51 +281,6 @@ mean(bin_glm_samples$scaled_random_samples$Population)
 stoffel_heritability_binomial
 ```
 
-```{r}
-setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/R kladd/Stoffel comparison results")
-
-# Saving the entire sim_test object as an RDS file
-saveRDS(pois_glm_samples, "stoffel_compare_poisson_03.05.rds")
-saveRDS(rptPois, "stoffel_poisson_03.05.rds")
-
-saveRDS(bin_glm_samples, "stoffel_compare_binomial_03.05.rds")
-saveRDS(rptBinary, "stoffel_binomial_03.05.rds")
-# To load this file back into R:
-#loaded_sim_test <- readRDS("simulation_19.04.rds")
-```
-
-
-```{r}
-rptBinary
-
-rptPois
-
-CI_pois
-
-mean(pois_glm_samples$scaled_random_samples$Population)
-
-stoffel_heritability_poisson
-
-CI_bin
-
-mean(bin_glm_samples$scaled_random_samples$Population)
-
-stoffel_heritability_binomial
-```
 
 
 
-
-```{r}
-plot_folder <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/Master/Latex/Figures/Stoffel Comparison"
-
-# Check if the folder exists, if not, create it
-if (!dir.exists(plot_folder)) {
-  dir.create(plot_folder)
-}
-
-ggsave(filename="Heritability_egg_poisson.png", plot=heritability_poisson, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="Heritability_colour_binomial.png", plot=heritability_binomial, path=plot_folder, width = 10, height = 6, dpi = 300)
-
-
-```

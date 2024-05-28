@@ -106,60 +106,6 @@ simulate_data <- function(n = 10000, n_groups = 100, covariance_level=0) {
 
 
 ```{r}
-extract_importance <- function(model, data, dist_factor) {
-  # Decompose fixed effects matrix using SVD
-  SVD <- BayesianVariableImportance::SVD_decomp(data[, c("X1", "X2", "X3")])
-  
-  # Sample from the posterior distribution
-  sample_post <- inla.posterior.sample(model, n = 1)
-  
-  # Extract latent effects names
-  latent_names <- rownames(sample_post[[1]]$latent)
-  
-  # Identify random effects using the pattern
-  pattern_random <- paste0("^", "Z1", ":")
-  random_indices <- grep(pattern_random, latent_names, value = TRUE)
-  random_samples <- sample_post[[1]]$latent[random_indices, , drop = FALSE]
-  
-  # Variance of random effects
-  var_random <- var(random_samples)
-  
-  # Process fixed effects
-  fixed_effects <- numeric(3)
-  fixed_imp <- numeric(3)
-  for (i in 1:3) {
-    fixed_indices <- grep(paste0("^", "X", i, ":"), latent_names, value = TRUE)
-    fixed_samples <- sample_post[[1]]$latent[fixed_indices, , drop = FALSE]
-
-    fixed_effects[i] <- fixed_samples
-  }
-
-  
-  fixed_imp <- (SVD$lambda^2 %*% (fixed_effects^2))
-
-  
-  # Calculate overall importances
-  total_var = as.double(dist_factor + var_random + sum(fixed_imp))
-  
-  imp_random <- var_random / total_var
-  imp_fixed <- fixed_imp / total_var
-  
-  r2m <- sum(fixed_imp) / total_var
-  r2c <- (sum(fixed_imp) + var_random) / total_var
-  
-  # Returning as a list
-  list(
-    random_importance = imp_random,
-    fixed_importance = imp_fixed,
-    r2m = r2m,
-    r2c = r2c,
-    expected_importance = (1) / (dist_factor + 1 + 2 + 3 + 1),
-    expected_r2m = (1 + 2 + 3) / (dist_factor + 1 + 2 + 3 + 1),
-    expected_r2c = (1 + 2 + 3 + 1) / (dist_factor + 1 + 2 + 3 + 1)
-  )
-}
-
-
 # Example of how you might integrate this into your simulation function
 run_simulation <- function(n_sim = 5, covariance_level = 0, include_probit = FALSE) {
   importances <- vector("list", n_sim)
@@ -188,8 +134,8 @@ run_simulation <- function(n_sim = 5, covariance_level = 0, include_probit = FAL
     model_pois <- BayesianVariableImportance::perform_inla_analysis(datasets$poisson, glmm_pois, family = "poisson", link_func = "log")
     
     importances[[i]] <- list(
-      logit = extract_importance(model_logit, datasets$binomial_logit, pi^2 / 3),
-      poisson = extract_importance(model_pois, datasets$poisson, log(1 + 1/exp(summary(model_pois)$fixed[1] + 0.5)))
+      logit = BayesianVariableImportance::extract_importances(model_logit, datasets$binomial_logit, pi^2 / 3),
+      poisson = BayesianVariableImportance::extract_importances(model_pois, datasets$poisson, log(1 + 1/exp(summary(model_pois)$fixed[1] + 0.5)))
     )
     
     if (include_probit) {
@@ -199,7 +145,7 @@ run_simulation <- function(n_sim = 5, covariance_level = 0, include_probit = FAL
         initial = log(1)
       )))
       model_probit <- BayesianVariableImportance::perform_inla_analysis(datasets$binomial_probit, glmm_probit, family = "binomial", link_func = "probit")
-      importances[[i]]$probit = extract_importance(model_probit, datasets$binomial_probit, 1)
+      importances[[i]]$probit = BayesianVariableImportance::extract_importances(model_probit, datasets$binomial_probit, 1)
     }
     setTxtProgressBar(pb, i)
     }, error = function(e) {
@@ -247,11 +193,12 @@ sim_high_neg <- run_simulation(n_sim=n_sims, covariance_level=-0.4, include_prob
 sims_count <- c(1, 1, 1, 1, 1)
 
 sims_count
+
 ```
 
 ```{r}
 # Saving the entire loaded_sim_no$successes object as an RDS file
-setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/R kladd/Simulation study results")
+setwd("/path/to/your/desired/folder")
 saveRDS(sim_no, "simulation_no_corr_04.05.rds")
 saveRDS(sim_low_pos, "simulation_low_pos_corr_04.05.rds")
 saveRDS(sim_low_neg, "simulation_low_neg_corr_04.05.rds")
@@ -261,7 +208,7 @@ saveRDS(sim_high_neg, "simulation_high_neg_corr_04.05.rds")
 
 ```{r}
 # To load this file back into R:
-setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/R kladd/Simulation study results")
+setwd("/path/to/your/desired/folder")
 loaded_sim_no <- readRDS("simulation_no_corr_04.05.rds")
 loaded_sim_low_pos <- readRDS("simulation_low_pos_corr_04.05.rds")
 loaded_sim_low_neg <- readRDS("simulation_low_neg_corr_04.05.rds")
@@ -273,9 +220,6 @@ loaded_sim_high_neg <- readRDS("simulation_high_neg_corr_04.05.rds")
 
 
 ```{r}
-#Kjør dette over natta! Ikke kjør det før møtet kanskje?
-# rptR_probit <- rptBinary(y_probit_bin ~ X1 + X2 + X3 + (1 | Z1), grname =  
-#     c("Fixed", "Z1"), data = datasets$binomial_probit, nboot = 100, npermut = 0, link="probit", adjusted = FALSE)
 
 datasets_no <- simulate_data()
 datasets_low_pos <- simulate_data(covariance_level = 0.1)
@@ -322,7 +266,7 @@ rptR_pois_high_neg <- rptPoisson(y_pois ~ X1 + X2 + X3 + (1 | Z1), grname =
 ```
 
 ```{r}
-setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/R kladd/Simulation study results")
+setwd("/path/to/your/desired/folder")
 saveRDS(rptR_logit_no, "stoffel_sim_logit_no_corr_05.05.rds")
 saveRDS(rptR_pois_no, "stoffel_sim_pois_no_corr_05.05.rds")
 
@@ -340,6 +284,7 @@ saveRDS(rptR_pois_high_neg, "stoffel_sim_pois_high_neg_corr_05.05.rds")
 ```
 
 ```{r}
+setwd("/path/to/your/desired/folder")
 rptR_logit_no <- readRDS("stoffel_sim_logit_no_corr_05.05.rds")
 rptR_pois_no <- readRDS("stoffel_sim_pois_no_corr_05.05.rds")
 
@@ -455,13 +400,7 @@ extract_averages_and_quantiles <- function(sim_data, model) {
     average_r2m = average_r2m,
     quantile_r2m = quantile_r2m,
     average_r2c = average_r2c,
-    quantile_r2c = quantile_r2c,
-    #average_expected_importance = average_expected_importance,
-    #quantile_expected_importance = quantile_expected_importance,
-    #average_expected_r2m = average_expected_r2m,
-    #quantile_expected_r2m = quantile_expected_r2m,
-    #average_expected_r2c = average_expected_r2c,
-    #quantile_expected_r2c = quantile_expected_r2c
+    quantile_r2c = quantile_r2c
   )
 }
 
@@ -547,6 +486,7 @@ print(paste("Number of failed logit simulations:", num_failures_pois_high_neg))
 ```
 
 
+
 ```{r}
 library(ggplot2)
 library(dplyr)
@@ -559,6 +499,8 @@ pacman::p_load(ggplot2)
 pacman::p_load(latex2exp)
 
 
+# Combine all successful datasets into one data frame for Logit and Poisson
+# Here, using bind_rows from dplyr to merge data frames with an identifier
 random_importances_logit <- bind_rows(
   data.frame(Model = "Logit", Correlation = "0", RandomImportance = sapply(success_no_bin, function(x) x$logit$random_importance), Stoffel = Stoffel_logit_no),
   data.frame(Model = "Logit", Correlation = "0.1", RandomImportance = sapply(success_low_pos_bin, function(x) x$logit$random_importance), Stoffel = Stoffel_logit_low_pos),
@@ -567,13 +509,14 @@ random_importances_logit <- bind_rows(
   data.frame(Model = "Logit", Correlation = "-0.4", RandomImportance = sapply(success_high_neg_bin, function(x) x$logit$random_importance), Stoffel = Stoffel_logit_high_neg)
 )
 
+loaded_sim_no$successes[[1]]$logit$expected_importance
 
-expected_importance <- loaded_sim_no$successes[[1]]$logit$expected_importance
+expected_importance <- 0.0972#loaded_sim_no$successes[[1]]$logit$expected_importance
 random_importances_logit$ExpectedImportance <- expected_importance
 random_importances_logit$ConditionalExpected <- ifelse(random_importances_logit$Correlation == "0",
                                                       random_importances_logit$ExpectedImportance, 
                                                       NA)
-
+# Convert Correlation to a factor and specify the order of the levels
 random_importances_logit$Correlation <- factor(random_importances_logit$Correlation,
                                              #levels = c("rho=-0.4", "rho=-0.1", "rho=0", "rho=0.1", "rho=0.4"),
                                              levels = c("-0.4", "-0.1", "0", "0.1", "0.4"),
@@ -587,15 +530,23 @@ means <- random_importances_logit %>%
   group_by(Correlation) %>%
   summarise(Mean = mean(RandomImportance))
 
+medians <- random_importances_logit %>%
+  group_by(Correlation) %>%
+  summarise(Median = median(RandomImportance))
+
+means
+medians
+
 # Plotting faceted histograms with conditional expected importance line
 random_logit_plot <- ggplot(random_importances_logit, aes(x = RandomImportance, fill = Correlation)) +
   geom_histogram(bins = 30, alpha = 0.7) +
   facet_wrap(~ Correlation, scales = "free", nrow = 1, ncol = 5, labeller = as_labeller(appender, default = label_parsed)) +
   geom_vline(data = random_importances_logit, aes(xintercept = ConditionalExpected), color = "green", linetype = "dashed", linewidth = 1) +
   geom_point(data = means, aes(x = Mean, y = 0, fill = Correlation), shape = 21, size = 3, color = "black") +
+  #geom_point(data = medians, aes(x = Median, y = 0, fill = Correlation), shape = 21, size = 3, color = "grey") +
   geom_point(data = random_importances_logit, aes(x = Stoffel, y = 0, fill = Correlation), size = 3, color = "orange") +
   labs(#title = "Random Importances Across Correlation Levels for Logit Model",
-       x = "Random Importance", y = "Frequency") +
+       x = "Relative Importance", y = "Frequency") +
   scale_fill_manual(values = c("-0.4" = "#E6C6DF",
                                "-0.1" = "#D6C6E7",
                                "0" = "#C6CDF7",
@@ -603,10 +554,10 @@ random_logit_plot <- ggplot(random_importances_logit, aes(x = RandomImportance, 
                                "0.4" = "#C6F7CD"
                                )) +
   theme_minimal() +
-  theme(legend.position = "none",
+  theme(text = element_text(family="LM Roman 10"), legend.position = "none",
     strip.text.x = element_text(size = 18),
-    axis.title.x = element_text(size = 24),
-    axis.title.y = element_text(size = 24),
+    axis.title.x = element_text(size = 16),
+    axis.title.y = element_text(size = 16),
     axis.text.x = element_text(size = 12),
     axis.text.y = element_text(size = 12)
     ) +
@@ -614,17 +565,6 @@ random_logit_plot <- ggplot(random_importances_logit, aes(x = RandomImportance, 
 
 
 random_logit_plot
-
-
-mean(random_importances_logit$RandomImportance[which(random_importances_logit$Correlation == "-0.4")]) - Stoffel_logit_high_neg
-
-mean(random_importances_logit$RandomImportance[which(random_importances_logit$Correlation == "-0.1")]) - Stoffel_logit_low_neg
-
-mean(random_importances_logit$RandomImportance[which(random_importances_logit$Correlation == "0")]) - Stoffel_logit_no
-
-mean(random_importances_logit$RandomImportance[which(random_importances_logit$Correlation == "0.1")]) - Stoffel_logit_low_pos
-
-mean(random_importances_logit$RandomImportance[which(random_importances_logit$Correlation == "0.4")]) - Stoffel_logit_high_pos
 
 
 ```
@@ -642,7 +582,8 @@ pacman::p_load(ggplot2)
 pacman::p_load(latex2exp)
 
 
-
+# Combine all successful datasets into one data frame for Logit and Poisson
+# Here, using bind_rows from dplyr to merge data frames with an identifier
 random_importances_poisson <- bind_rows(
   data.frame(Model = "Poisson", Correlation = "0", RandomImportance = sapply(success_no_pois, function(x) x$poisson$random_importance), Stoffel = Stoffel_pois_no),
   data.frame(Model = "Poisson", Correlation = "0.1", RandomImportance = sapply(success_low_pos_pois, function(x) x$poisson$random_importance), Stoffel = Stoffel_pois_low_pos),
@@ -652,12 +593,12 @@ random_importances_poisson <- bind_rows(
 )
 
 
-expected_importance <- loaded_sim_no$successes[[1]]$poisson$expected_importance
+expected_importance <- 0.0969 #loaded_sim_no$successes[[1]]$poisson$expected_importance
 random_importances_poisson$ExpectedImportance <- expected_importance
 random_importances_poisson$ConditionalExpected <- ifelse(random_importances_poisson$Correlation == "0",
                                                       random_importances_poisson$ExpectedImportance, 
                                                       NA)
-
+# Convert Correlation to a factor and specify the order of the levels
 random_importances_poisson$Correlation <- factor(random_importances_poisson$Correlation,
                                              #levels = c("rho=-0.4", "rho=-0.1", "rho=0", "rho=0.1", "rho=0.4"),
                                              levels = c("-0.4", "-0.1", "0", "0.1", "0.4"),
@@ -671,15 +612,23 @@ means <- random_importances_poisson %>%
   group_by(Correlation) %>%
   summarise(Mean = mean(RandomImportance))
 
+medians <- random_importances_poisson %>%
+  group_by(Correlation) %>%
+  summarise(Median = median(RandomImportance))
 
+means
+medians
+
+# Plotting faceted histograms with conditional expected importance line
 random_poisson_plot <- ggplot(random_importances_poisson, aes(x = RandomImportance, fill = Correlation)) +
   geom_histogram(bins = 30, alpha = 0.7) +
   facet_wrap(~ Correlation, scales = "free", nrow = 1, ncol = 5, labeller = as_labeller(appender, default = label_parsed)) +
   geom_vline(data = random_importances_poisson, aes(xintercept = ConditionalExpected), color = "green", linetype = "dashed", linewidth = 1) +
   geom_point(data = means, aes(x = Mean, y = 0, fill = Correlation), shape = 21, size = 3, color = "black") +
+  #geom_point(data = medians, aes(x = Median, y = 0, fill = Correlation), shape = 21, size = 3, color = "grey") +
   geom_point(data = random_importances_poisson, aes(x = Stoffel, y = 0, fill = Correlation), size = 3, color = "orange") +
   labs(#title = "Random Importances Across Correlation Levels for Logit Model",
-       x = "Random Importance", y = "Frequency") +
+       x = "Relative Importance", y = "Frequency") +
   scale_fill_manual(values = c("-0.4" = "#E6C6DF",
                                "-0.1" = "#D6C6E7",
                                "0" = "#C6CDF7",
@@ -687,10 +636,10 @@ random_poisson_plot <- ggplot(random_importances_poisson, aes(x = RandomImportan
                                "0.4" = "#C6F7CD"
                                )) +
   theme_minimal() +
-  theme(legend.position = "none",
+  theme(text = element_text(family="LM Roman 10"), legend.position = "none",
     strip.text.x = element_text(size = 18),
-    axis.title.x = element_text(size = 24),
-    axis.title.y = element_text(size = 24),
+    axis.title.x = element_text(size = 16),
+    axis.title.y = element_text(size = 16),
     axis.text.x = element_text(size = 12),
     axis.text.y = element_text(size = 12)
     ) +
@@ -698,14 +647,6 @@ random_poisson_plot <- ggplot(random_importances_poisson, aes(x = RandomImportan
 
 
 random_poisson_plot
-
-str(random_importances_poisson)
-
-mean(random_importances_poisson[random_importances_poisson$Correlation == "-0.4", "RandomImportance"]) - Stoffel_pois_high_neg
-mean(random_importances_poisson[random_importances_poisson$Correlation == "-0.1", "RandomImportance"]) - Stoffel_pois_low_neg
-mean(random_importances_poisson[random_importances_poisson$Correlation == "0", "RandomImportance"]) - Stoffel_pois_no
-mean(random_importances_poisson[random_importances_poisson$Correlation == "0.1", "RandomImportance"]) - Stoffel_pois_low_pos
-mean(random_importances_poisson[random_importances_poisson$Correlation == "0.4", "RandomImportance"]) - Stoffel_pois_high_pos
 
 
 ```
@@ -716,33 +657,27 @@ library(ggplot2)
 library(dplyr)
 library(patchwork)
 
-
 plot_fixed_importances <- function(data, model_name, cov_level=0) {
-
+  # Create a list to collect data frames for each fixed effect
   fixed_effects_data <- list()
 
   
+  # Iterate over each fixed effect
   for (i in 1:3) {
+    expected <- ifelse(model_name == "logit", 0.0972, 0.0969)
     fixed_importances <- data.frame(
       Simulation = rep(1:length(data), each = 1),
       FixedEffect = paste0("X", i),
       Importance = sapply(data, function(x) x[[model_name]]$fixed_importance[i]),
-      ExpectedImportance = (i * data[[1]][[model_name]]$expected_importance),
+      ExpectedImportance = (i * expected), #data[[1]][[model_name]]$expected_importance),
       Correlation = as.character(cov_level)
     ) 
     fixed_effects_data[[i]] <- fixed_importances
   }
   
   all_fixed_importances <- do.call(rbind, fixed_effects_data)
-  all_fixed_importances$Importance <- round(all_fixed_importances$Importance, 4)
+  all_fixed_importances$Importance <- round(all_fixed_importances$Importance, 5)
   
-
-  expected <- 0
-  if (model_name == "poisson") {
-    expected <- 0.115624
-  } else if (model_name == "logit") {
-    expected <- 0.09718298
-  }
   
   fill_color <- if (cov_level == -0.4) {
     "#E6C6DF"
@@ -756,55 +691,82 @@ plot_fixed_importances <- function(data, model_name, cov_level=0) {
     "#C6F7CD"
   } else {
     "#FFFFFF"  # Default color (white) if no match found
-  }
+  } 
 
   means <- all_fixed_importances %>%
   group_by(FixedEffect) %>%
   summarise(Mean = mean(Importance))
   
+  medians <- all_fixed_importances %>%
+  group_by(FixedEffect) %>%
+  summarise(Median = median(Importance))
+  
+  importance_range <- range(all_fixed_importances$Importance)
+  binwidth <- (importance_range[2] - importance_range[1]) / 90
+  
+  print(binwidth)
+  print(importance_range)
+  
   if (cov_level == 0) {
     ggplot(all_fixed_importances, aes(x = Importance)) +
-    geom_histogram(bins = 75, fill = fill_color, alpha = 0.7) +
+    geom_histogram(binwidth = binwidth, fill = fill_color, alpha = 0.7) +
     #facet_wrap(~ FixedEffect, scales = "free") +
     facet_wrap(~ Correlation, scales = "free", labeller =as_labeller(appender, default = label_parsed)) +
     geom_vline(aes(xintercept = ExpectedImportance), color = "green", linetype = "dashed", linewidth = 1) +
-    geom_point(data = means, aes(x = Mean, y = 0, fill = FixedEffect), shape = 21, size = 3, color = "black", show.legend = F) +
+    geom_point(data = means, aes(x = Mean, y = 0, fill = FixedEffect), shape = 21, size = 3, show.legend = F) +
+    #geom_point(data = medians, aes(x = Median, y = 0, fill = FixedEffect), shape = 21, size = 3, color = "grey", show.legend = F) +  
+    geom_text(data = means, aes(x = Mean, y = 0, label = FixedEffect), vjust = -1, color = "black") + 
     labs(#title = paste(title_prefix, "Fixed Effect Importances with Expected Importances"),
-         x = "Fixed Effect Importance", y = "Frequency") +
+         #x = "Fixed Effect Importance", 
+         y = "Frequency") +
+    annotate("text", x = Inf, y = Inf, label = TeX(paste0("$\\rho = $", cov_level)), vjust = 1.5, hjust = 1.2, size = 7, color = "#696969") + 
     scale_fill_manual(values = c("X1" = fill_color,
                            "X2" = fill_color,
                            "X3" = fill_color
                            )) +
     theme_minimal() +
-    theme(legend.position = "none",
-    strip.text.x = element_text(size = 18),
-    axis.title.x = element_text(size = 24),
-    axis.title.y = element_text(size = 24),
+    theme(text = element_text(family="LM Roman 10"), legend.position = "none",
+    strip.text.x = element_blank(),
+    strip.text.y = element_blank(),
+    axis.title.x = element_text(),
+    axis.title.y = element_text(size = 16),
     axis.text.x = element_text(size = 12),
     axis.text.y = element_text(size = 12)
-    ) 
+    ) + scale_x_continuous(breaks = function(x) pretty(x, n = 4), 
+                          labels = label_number(accuracy = 0.01),
+                           limits = c(0, 0.35))
   } else {
     ggplot(all_fixed_importances, aes(x = Importance)) +
-    geom_histogram(bins = 75, fill = fill_color, alpha = 0.7) +
+    geom_histogram(binwidth = binwidth, fill = fill_color, alpha = 0.7) +
     #facet_wrap(~ FixedEffect, scales = "free") +
     facet_wrap(~ Correlation, scales = "free", labeller = as_labeller(appender, default = label_parsed)) +
     geom_point(data = means, aes(x = Mean, y = 0, fill = FixedEffect), shape = 21, size = 3, color = "black", show.legend = F) +
+    #geom_point(data = medians, aes(x = Median, y = 0, fill = FixedEffect), shape = 21, size = 3, color = "grey", show.legend = F) +
+    geom_text(data = means, aes(x = Mean, y = 0, label = FixedEffect), vjust = -1, color = "black") +
     labs(#title = paste(title_prefix, "Fixed Effect Importances with Expected Importances"),
-         x = "Fixed Effect Importance", y = "Frequency") +
+         #x = "Fixed Effect Importance", 
+          y = "Frequency"
+         ) +
+    annotate("text", x = Inf, y = Inf, label = TeX(paste0("$\\rho = $", cov_level)), vjust = 1.5, hjust = 1.2, size = 7, color = "#696969") +  
     scale_fill_manual(values = c("X1" = fill_color,
                            "X2" = fill_color,
                            "X3" = fill_color
                            )) +
     theme_minimal() +
-    theme(legend.position = "none",
-    strip.text.x = element_text(size = 18),
-    axis.title.x = element_text(size = 24),
-    axis.title.y = element_text(size = 24),
+    theme(text = element_text(family="LM Roman 10"), legend.position = "none",
+    strip.text.x = element_blank(),
+    strip.text.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(size = 16),
     axis.text.x = element_text(size = 12),
     axis.text.y = element_text(size = 12)
-    ) + scale_x_continuous(breaks = function(x) pretty(x, n = 4), labels = label_number(accuracy = 0.01)) 
+    ) + scale_x_continuous(breaks = function(x) pretty(x, n = 4), 
+                           labels = label_number(accuracy = 0.01),
+                           limits = c(0, 0.35)) 
   }
-}    
+}
+
+
 
 logit_no <- plot_fixed_importances(success_no_bin, "logit", cov_level=0)
 logit_low_pos <- plot_fixed_importances(success_low_pos_bin, "logit", cov_level=0.1)
@@ -831,10 +793,9 @@ if (!requireNamespace("gridExtra", quietly = TRUE)) {
 }
 library(gridExtra)
 
-
 remove_x_axis_label <- function(p) {
   p + theme(axis.title.x = element_blank(),
-            legend.position = "none"
+            legend.position = "none",
             )
 }
 
@@ -845,38 +806,39 @@ logit_low_neg <- remove_x_axis_label(plot_fixed_importances(success_low_neg_bin,
 logit_high_pos <- remove_x_axis_label(plot_fixed_importances(success_high_pos_bin, "logit", cov_level = 0.4))
 logit_high_neg <- remove_x_axis_label(plot_fixed_importances(success_high_neg_bin, "logit", cov_level = -0.4))
 
-poisson_no <- remove_x_axis_label(plot_fixed_importances(success_no_bin, "poisson", cov_level = 0))
-poisson_low_pos <- remove_x_axis_label(plot_fixed_importances(success_low_pos_bin, "poisson", cov_level = 0.1))
-poisson_low_neg <- remove_x_axis_label(plot_fixed_importances(success_low_neg_bin, "poisson", cov_level = -0.1))
-poisson_high_pos <- remove_x_axis_label(plot_fixed_importances(success_high_pos_bin, "poisson", cov_level = 0.4))
-poisson_high_neg <- remove_x_axis_label(plot_fixed_importances(success_high_neg_bin, "poisson", cov_level = -0.4))
+poisson_no <- remove_x_axis_label(plot_fixed_importances(success_no_pois, "poisson", cov_level = 0))
+poisson_low_pos <- remove_x_axis_label(plot_fixed_importances(success_low_pos_pois, "poisson", cov_level = 0.1))
+poisson_low_neg <- remove_x_axis_label(plot_fixed_importances(success_low_neg_pois, "poisson", cov_level = -0.1))
+poisson_high_pos <- remove_x_axis_label(plot_fixed_importances(success_high_pos_pois, "poisson", cov_level = 0.4))
+poisson_high_neg <- remove_x_axis_label(plot_fixed_importances(success_high_neg_pois, "poisson", cov_level = -0.4))
 
 combined_plot_logit <- (logit_high_neg / logit_low_neg / logit_no / logit_low_pos / logit_high_pos) +
-  plot_layout(ncol = 1, axis_titles = "collect", guides = "auto") +
-  plot_annotation(title = NULL, caption = NULL, tag_levels = NULL) +
-  labs(x = "Fixed Effect Importance", y = "Frequency")
+  plot_layout(ncol = 1, axes = "collect", guides = "auto") +
+  plot_annotation(title = NULL, caption = NULL, tag_levels = NULL) 
 
-combined_plot_logit + theme_minimal() + theme(strip.text.x = element_text(size = 18),
-                                       axis.title.x = element_text(size = 24),
-                                       axis.title.y = element_text(size = 24),
+
+combined_plot_logit <- combined_plot_logit + theme_minimal() + theme(text = element_text(family="LM Roman 10"), strip.text.x = element_blank(),
+                                       strip.text.y = element_blank(),
+                                       axis.title.x = element_text(size = 16),
+                                       axis.title.y = element_text(size = 16),
                                        axis.text.x = element_text(size = 12),
                                        axis.text.y = element_text(size = 12)
-                                       ) 
+                                       ) + labs(x = "Relative Importance") + plot_layout(axes = "collect")
 
 
 combined_plot_logit
 
 combined_plot_poisson <- (poisson_high_neg / poisson_low_neg / poisson_no / poisson_low_pos / poisson_high_pos) +
-  plot_layout(ncol = 1, axis_titles = "collect", guides = "auto") +
-  plot_annotation(title = NULL, caption = NULL, tag_levels = NULL) +
-  labs(x = "Fixed Effect Importance", y = "Frequency")
+  plot_layout(ncol = 1, axes = "collect", guides = "auto") +
+  plot_annotation(title = NULL, caption = NULL, tag_levels = NULL)
 
-combined_plot_poisson + theme_minimal() + theme(strip.text.x = element_text(size = 18),
-                                       axis.title.x = element_text(size = 24),
-                                       axis.title.y = element_text(size = 24),
+combined_plot_poisson <- combined_plot_poisson + theme_minimal() + theme(text = element_text(family="LM Roman 10"), strip.text.x = element_blank(),
+                                       strip.text.y = element_blank(),
+                                       axis.title.x = element_text(size = 16),
+                                       axis.title.y = element_text(size = 16),
                                        axis.text.x = element_text(size = 12),
                                        axis.text.y = element_text(size = 12)
-                                       ) 
+                                       ) + labs(x = "Relative Importance") + plot_layout(axes = "collect")
 
 
 combined_plot_poisson
@@ -889,15 +851,17 @@ combined_plot_poisson
 ## GELMAN R2
 Here, we compute and visualize the Gelman conditional R² metrics for each model. This metric gives insight into the proportion of variance explained by the fixed effects in the models.
 ```{r}
-
+#Calculate theoretical variance
 beta <- c(1, sqrt(2), sqrt(3))
+beta_poisson <- beta/sqrt(7)
 rho_values <- c(0, 0.1, -0.1, 0.4, -0.4)
 
+
 dist_logit <- pi^2/3
-dist_poisson <- log(1+1/exp(0 + 0.5*1))
 dist_probit <- 1
 
 
+# Calculate conditional and marginal R-squared for each covariance level
 variance_explained <- data.frame(
   rho = rho_values,
   expected_logit = numeric(length(rho_values)),
@@ -912,26 +876,42 @@ variance_explained <- data.frame(
 for (i in 1:length(rho_values)) {
   rho <- rho_values[i]
   
+  # Calculate Var(Y) for the current rho
   var_eta <- (sum((beta^2)) + 
                 2*(beta[1] * beta[2] * rho
                + beta[1] * beta[3] * rho
                + beta[3] * beta[2] * rho)
                + 1)
   
+  var_eta_poisson <- (sum((beta_poisson^2)) + 
+                2*(beta_poisson[1] * beta_poisson[2] * rho
+               + beta_poisson[1] * beta_poisson[3] * rho
+               + beta_poisson[3] * beta_poisson[2] * rho)
+               + 1/7)
+  
+  lamba_poisson <- exp(0 + 0.5*((sum((beta_poisson^2)) + 
+                        2*(beta_poisson[1] * beta_poisson[2] * rho
+                        + beta_poisson[1] * beta_poisson[3] * rho
+                        + beta_poisson[3] * beta_poisson[2] * rho)
+                        + 1/7)))
+  
+  dist_poisson <- log(1+1/lamba_poisson)
+  
+  #cat(var_Y)
   if (rho==0){
     variance_explained[i, "expected_logit"] <- 1/(var_eta + dist_logit)
-    variance_explained[i, "expected_poisson"] <- 1/(var_eta + dist_poisson)
+    variance_explained[i, "expected_poisson"] <- (1/7)/(var_eta_poisson + dist_poisson)
     variance_explained[i, "expected_probit"] <- 1/(var_eta + dist_probit)
   } else {
     variance_explained[i, "expected_logit"] <- 0
     variance_explained[i, "expected_poisson"] <- 0
   }
-
+  # Calculate conditional R-squared
   R2_marginal_logit <- (var_eta-1) / (var_eta + dist_logit)
   R2_conditional_logit <- (var_eta) / (var_eta + dist_logit)
   
-  R2_marginal_poisson <- (var_eta-1) / (var_eta + dist_poisson)
-  R2_conditional_poisson <- (var_eta) / (var_eta + dist_poisson)
+  R2_marginal_poisson <- (var_eta_poisson - 1/7) / (var_eta_poisson + dist_poisson)
+  R2_conditional_poisson <- (var_eta_poisson) / (var_eta_poisson + dist_poisson)
   
   variance_explained[i, "R2_marginal_logit"] <- R2_marginal_logit
   variance_explained[i, "R2_conditional_logit"] <- R2_conditional_logit
@@ -939,110 +919,18 @@ for (i in 1:length(rho_values)) {
   variance_explained[i, "R2_conditional_poisson"] <- R2_conditional_poisson
 }
 
-
+variance_explained
 
 ```
 
 
-
 ```{r}
-library(ggplot2)
+library(ggtext)
 library(dplyr)
 
-
-plot_r2_correlation_level <- function(data, model_name, correlation_label, correlation_color) {
-
-    r2_data <- data.frame(
-      Type = rep(c("Marginal", "Conditional"), each = length(data)),
-      Value = c(sapply(data, function(x) x[[model_name]]$r2m),
-                sapply(data, function(x) x[[model_name]]$r2c))
-    )
-    r2_data$Type <- factor(r2_data$Type, levels = c("Marginal", "Conditional"))
-    
-    means <- r2_data %>%
-    group_by(Type) %>%
-    summarise(Mean = mean(Value))
-    
-
-    expected_values <- variance_explained %>%
-        filter(rho == as.numeric(correlation_label)) %>%
-        summarise(
-          R2_Marginal = ifelse(model_name == "logit", R2_marginal_logit, R2_marginal_poisson),
-          R2_Conditional = ifelse(model_name == "logit", R2_conditional_logit, R2_conditional_poisson)
-        )
-
-
-    expected_lines <- data.frame(
-      Type = c("Marginal", "Conditional"),
-      Value = c(expected_values$R2_Marginal, expected_values$R2_Conditional),
-      Measure = "Expected"
-    )
-    expected_lines$Type <- factor(expected_lines$Type, levels = c("Marginal", "Conditional"))
-
-
-    plot <- ggplot(r2_data, aes(x = Value, fill = Type)) +
-        geom_histogram(bins = 30, alpha = 0.7) +
-        facet_wrap(~ Type, scales = "free") +
-        geom_vline(data = expected_lines, aes(xintercept = Value, color = Measure), linetype = "dashed", linewidth = 1) +
-        geom_point(data = means, aes(x = Mean, y = 0, fill = Type), shape = 21, size = 3, color = "black") +
-        scale_fill_manual(values = c(Marginal = correlation_color, Conditional = correlation_color)) +
-        scale_color_manual(values = c(Expected = "green")) +
-        labs(#title = paste("R-squared Values for", model_name, "Model: rho =", correlation_label),
-             x = "R2 Value", y = "Frequency") +
-        theme_minimal() +
-        theme(legend.position = "none",
-              strip.text.x = element_text(size = 18),
-              axis.title.x = element_text(size = 24),
-              axis.title.y = element_text(size = 24),
-              axis.text.x = element_text(size = 12),
-              axis.text.y = element_text(size = 12))
-
-    return(plot)
-}
-
-stoffel_logit_no <- c(Stoffel_logit_R2m_no, Stoffel_logit_R2c_no)
-stoffel_logit_low_pos <- c(Stoffel_logit_R2m_low_pos, Stoffel_logit_R2c_low_pos)
-stoffel_logit_low_neg <- c(Stoffel_logit_R2m_low_neg, Stoffel_logit_R2c_low_neg)
-stoffel_logit_high_pos <- c(Stoffel_logit_R2m_high_pos, Stoffel_logit_R2c_high_pos)
-stoffel_logit_high_neg <- c(Stoffel_logit_R2m_high_neg, Stoffel_logit_R2c_high_neg)
-
-
-r2_logit_no <- plot_r2_correlation_level(success_no_bin, "logit", 0, "#C6CDF7")
-r2_logit_low_pos <- plot_r2_correlation_level(success_low_pos_bin, "logit", 0.1, "#B6D7F7")
-r2_logit_low_neg <- plot_r2_correlation_level(success_low_neg_bin, "logit", -0.1, "#D6C6E7")
-r2_logit_high_pos <- plot_r2_correlation_level(success_high_pos_bin, "logit", 0.4, "#C6F7CD")
-r2_logit_high_neg <- plot_r2_correlation_level(success_high_neg_bin, "logit", -0.4, "#E6C6DF")
-
-r2_poisson_no <- plot_r2_correlation_level(success_no_bin, "poisson", 0, "#C6CDF7")
-r2_poisson_low_pos <- plot_r2_correlation_level(success_low_pos_bin, "poisson", 0.1, "#B6D7F7")
-r2_poisson_low_neg <- plot_r2_correlation_level(success_low_neg_bin, "poisson", -0.1, "#D6C6E7")
-r2_poisson_high_pos <- plot_r2_correlation_level(success_high_pos_bin, "poisson", 0.4, "#C6F7CD")
-r2_poisson_high_neg <- plot_r2_correlation_level(success_high_neg_bin, "poisson", -0.4, "#E6C6DF")
-
-r2_logit_high_neg 
-r2_logit_low_neg
-r2_logit_no
-r2_logit_low_pos
-r2_logit_high_pos
-
-r2_poisson_high_neg
-r2_poisson_low_neg
-r2_poisson_no
-r2_poisson_low_pos
-r2_poisson_high_pos
-
-
-variance_explained
-0.1337958*2
-0.1337958*3
-
-```
-
-
-```{r}
-
+# Function to plot R-squared values including Stoffel points
 plot_r2_correlation_level_with_stoffel <- function(data, model_name, correlation_label, correlation_color, stoffel_values) {
-
+    # Create the data for plotting
     r2_data <- data.frame(
         Type = rep(c("Marginal", "Conditional"), each = length(data)),
         Value = c(sapply(data, function(x) x[[model_name]]$r2m),
@@ -1053,8 +941,12 @@ plot_r2_correlation_level_with_stoffel <- function(data, model_name, correlation
     means <- r2_data %>%
         group_by(Type) %>%
         summarise(Mean = mean(Value))
+    
+    medians <- r2_data %>%
+    group_by(Type) %>%
+    summarise(Median = median(Value))
 
-
+    # Retrieve the expected values from the variance_explained DataFrame
     expected_values <- variance_explained %>%
         filter(rho == as.numeric(correlation_label)) %>%
         summarise(
@@ -1062,7 +954,7 @@ plot_r2_correlation_level_with_stoffel <- function(data, model_name, correlation
             R2_Conditional = ifelse(model_name == "logit", R2_conditional_logit, R2_conditional_poisson)
         )
 
-
+    # Prepare expected value lines
     expected_lines <- data.frame(
         Type = c("Marginal", "Conditional"),
         Value = c(expected_values$R2_Marginal, expected_values$R2_Conditional),
@@ -1070,7 +962,7 @@ plot_r2_correlation_level_with_stoffel <- function(data, model_name, correlation
     )
     expected_lines$Type <- factor(expected_lines$Type, levels = c("Marginal", "Conditional"))
 
-
+    # Prepare Stoffel values as points
     stoffel_points <- data.frame(
         Type = c("Marginal", "Conditional"),
         Value = stoffel_values,
@@ -1078,24 +970,57 @@ plot_r2_correlation_level_with_stoffel <- function(data, model_name, correlation
     )
     stoffel_points$Type <- factor(stoffel_points$Type, levels = c("Marginal", "Conditional"))
 
-
-    plot <- ggplot(r2_data, aes(x = Value, fill = Type)) +
-        geom_histogram(bins = 30, alpha = 0.7) +
-        facet_wrap(~ Type, scales = "free") +
-        geom_vline(data = expected_lines, aes(xintercept = Value, color = Measure), linetype = "dashed", linewidth = 1) +
-        geom_point(data = means, aes(x = Mean, y = 0, fill = Type), shape = 21, size = 3, color = "black") +
-        geom_point(data = stoffel_points, aes(x = Value, y = 0, color = Measure), size = 3) +
-        scale_fill_manual(values = c(Marginal = correlation_color, Conditional = correlation_color)) +
-        scale_color_manual(values = c(Expected = "green", Stoffel = "orange")) +
-        labs(#title = paste("R-squared Values for", model_name, "Model: rho =", correlation_label),
-             x = "R2 Value", y = "Frequency") +
-        theme_minimal() +
-        theme(legend.position = "none",
-              strip.text.x = element_text(size = 18),
-              axis.title.x = element_text(size = 24),
-              axis.title.y = element_text(size = 24),
-              axis.text.x = element_text(size = 12),
-              axis.text.y = element_text(size = 12))
+    
+    facet_titles <- c(
+        "Marginal" = "Marginal~R^2",
+        "Conditional" = "Conditional~R^2"
+    )
+    # Plot
+    if (correlation_label == -0.4){
+      plot <- ggplot(r2_data, aes(x = Value, fill = Type)) +
+          geom_histogram(bins = 30, alpha = 0.7) +
+          facet_wrap(~ Type, scales = "free", labeller = labeller(Type = as_labeller(facet_titles, label_parsed))) +#as_labeller(facet_titles)) +
+          geom_vline(data = expected_lines, aes(xintercept = Value, color = Measure), linetype = "dashed", linewidth = 1) +
+          geom_point(data = means, aes(x = Mean, y = 0, fill = Type), shape = 21, size = 3, color = "black") +
+          #geom_point(data = medians, aes(x = Median, y = 0, fill = Type), shape = 21, size = 3, color = "grey") +
+          geom_point(data = stoffel_points, aes(x = Value, y = 0, color = Measure), size = 3) +
+          annotate("text", x = Inf, y = Inf, label = TeX(paste0("$\\rho =$", correlation_label)), vjust = 1.5, hjust = 1.2, size = 7, color = "#696969") +
+          scale_fill_manual(values = c(Marginal = correlation_color, Conditional = correlation_color)) +
+          scale_color_manual(values = c(Expected = "green", Stoffel = "orange")) +
+          labs(#title = paste("R-squared Values for", model_name, "Model: rho =", correlation_label),
+               x = "R2 Value", y = "Frequency") +
+          theme_minimal() +
+          theme(text = element_text(family="LM Roman 10"), legend.position = "none",
+                #strip.text.x = element_markdown(size = 14, face = "bold"),
+                strip.text.x = element_text(size = 18),
+                strip.text.y = element_blank(),
+                axis.title.x = element_blank(),
+                axis.title.y = element_text(size = 16),
+                axis.text.x = element_text(size = 12),
+                axis.text.y = element_text(size = 12))
+    }
+    else{
+      plot <- ggplot(r2_data, aes(x = Value, fill = Type)) +
+          geom_histogram(bins = 30, alpha = 0.7) +
+          facet_wrap(~ Type, scales = "free") +
+          geom_vline(data = expected_lines, aes(xintercept = Value, color = Measure), linetype = "dashed", linewidth = 1) +
+          geom_point(data = means, aes(x = Mean, y = 0, fill = Type), shape = 21, size = 3, color = "black") +
+          #geom_point(data = medians, aes(x = Median, y = 0, fill = Type), shape = 21, size = 3, color = "grey") +
+          geom_point(data = stoffel_points, aes(x = Value, y = 0, color = Measure), size = 3) +
+          annotate("text", x = Inf, y = Inf, label = TeX(paste0("$\\rho =$", correlation_label)), vjust = 1.5, hjust = 1.2, size = 7, color = "#696969") +
+          scale_fill_manual(values = c(Marginal = correlation_color, Conditional = correlation_color)) +
+          scale_color_manual(values = c(Expected = "green", Stoffel = "orange")) +
+          labs(#title = paste("R-squared Values for", model_name, "Model: rho =", correlation_label),
+               x = "R2 Value", y = "Frequency") +
+          theme_minimal() +
+          theme(text = element_text(family="LM Roman 10"), legend.position = "none",
+                strip.text.x = element_blank(),
+                strip.text.y = element_blank(),
+                axis.title.x = element_blank(),
+                axis.title.y = element_text(size = 16),
+                axis.text.x = element_text(size = 12),
+                axis.text.y = element_text(size = 12))
+    }
 
     return(plot)
 }
@@ -1126,23 +1051,12 @@ r2_poisson_low_neg <- plot_r2_correlation_level_with_stoffel(success_low_neg_bin
 r2_poisson_high_pos <- plot_r2_correlation_level_with_stoffel(success_high_pos_bin, "poisson", 0.4, "#C6F7CD", stoffel_poisson_high_pos)
 r2_poisson_high_neg <- plot_r2_correlation_level_with_stoffel(success_high_neg_bin, "poisson", -0.4, "#E6C6DF", stoffel_poisson_high_neg)
 
-r2_logit_high_neg 
-r2_logit_low_neg
-r2_logit_no
-r2_logit_low_pos
-r2_logit_high_pos
 
-r2_poisson_high_neg
-r2_poisson_low_neg
-r2_poisson_no
-r2_poisson_low_pos
-r2_poisson_high_pos
-
-
+# Calculate the means for each model
 r2_data_high_neg <- data.frame(
     Type = rep(c("Marginal", "Conditional"), each = length(success_high_neg_bin)),
-    Value = c(sapply(success_high_neg_bin, function(x) x[["poisson"]]$r2m),
-              sapply(success_high_neg_bin, function(x) x[["poisson"]]$r2c))
+    Value = c(sapply(success_high_neg_bin, function(x) x[["logit"]]$r2m),
+              sapply(success_high_neg_bin, function(x) x[["logit"]]$r2c))
 )
 r2_data_high_neg$Type <- factor(r2_data_high_neg$Type, levels = c("Marginal", "Conditional"))
 
@@ -1152,8 +1066,8 @@ means_high_neg <- r2_data_high_neg %>%
 
 r2_data_low_neg <- data.frame(
     Type = rep(c("Marginal", "Conditional"), each = length(success_low_neg_bin)),
-    Value = c(sapply(success_low_neg_bin, function(x) x[["poisson"]]$r2m),
-              sapply(success_low_neg_bin, function(x) x[["poisson"]]$r2c))
+    Value = c(sapply(success_low_neg_bin, function(x) x[["logit"]]$r2m),
+              sapply(success_low_neg_bin, function(x) x[["logit"]]$r2c))
 )
 r2_data_low_neg$Type <- factor(r2_data_low_neg$Type, levels = c("Marginal", "Conditional"))
 
@@ -1164,8 +1078,8 @@ means_low_neg <- r2_data_low_neg %>%
 
 r2_data_no <- data.frame(
     Type = rep(c("Marginal", "Conditional"), each = length(success_no_bin)),
-    Value = c(sapply(success_no_bin, function(x) x[["poisson"]]$r2m),
-              sapply(success_no_bin, function(x) x[["poisson"]]$r2c))
+    Value = c(sapply(success_no_bin, function(x) x[["logit"]]$r2m),
+              sapply(success_no_bin, function(x) x[["logit"]]$r2c))
 )
 r2_data_no$Type <- factor(r2_data_no$Type, levels = c("Marginal", "Conditional"))
 
@@ -1175,8 +1089,8 @@ means_no <- r2_data_no %>%
 
 r2_data_low_pos <- data.frame(
     Type = rep(c("Marginal", "Conditional"), each = length(success_low_pos_bin)),
-    Value = c(sapply(success_low_pos_bin, function(x) x[["poisson"]]$r2m),
-              sapply(success_low_pos_bin, function(x) x[["poisson"]]$r2c))
+    Value = c(sapply(success_low_pos_bin, function(x) x[["logit"]]$r2m),
+              sapply(success_low_pos_bin, function(x) x[["logit"]]$r2c))
 )
 r2_data_low_pos$Type <- factor(r2_data_low_pos$Type, levels = c("Marginal", "Conditional"))
 
@@ -1186,8 +1100,8 @@ means_low_pos <- r2_data_low_pos %>%
 
 r2_data_high_pos <- data.frame(
     Type = rep(c("Marginal", "Conditional"), each = length(success_high_pos_bin)),
-    Value = c(sapply(success_high_pos_bin, function(x) x[["poisson"]]$r2m),
-              sapply(success_high_pos_bin, function(x) x[["poisson"]]$r2c))
+    Value = c(sapply(success_high_pos_bin, function(x) x[["logit"]]$r2m),
+              sapply(success_high_pos_bin, function(x) x[["logit"]]$r2c))
 )
 r2_data_high_pos$Type <- factor(r2_data_high_pos$Type, levels = c("Marginal", "Conditional"))
 
@@ -1195,18 +1109,6 @@ means_high_pos <- r2_data_high_pos %>%
     group_by(Type) %>%
     summarise(Mean = mean(Value))
 
-
-
-means_high_neg
-means_low_neg
-means_no
-means_low_pos
-means_high_pos
-
-variance_explained
-
-abs(0.848 - 0.8766533)
-abs(0.934 - 0.9603305)
 
 ```
 
@@ -1224,83 +1126,42 @@ r2_poisson_low_neg <- remove_x_axis_label(plot_r2_correlation_level_with_stoffel
 r2_poisson_high_pos <- remove_x_axis_label(plot_r2_correlation_level_with_stoffel(success_high_pos_bin, "poisson", 0.4, "#C6F7CD", stoffel_poisson_high_pos))
 r2_poisson_high_neg <- remove_x_axis_label(plot_r2_correlation_level_with_stoffel(success_high_neg_bin, "poisson", -0.4, "#E6C6DF", stoffel_poisson_high_neg))
 
-combined_plot_r2_logit <- (r2_logit_high_neg / r2_logit_low_neg / r2_logit_no / r2_logit_low_pos / r2_logit_high_pos) +
-  plot_layout(ncol = 1, axis_titles = "collect", guides = "auto") +
-  plot_annotation(title = NULL, caption = NULL, tag_levels = NULL) +
-  labs(x = "Fixed Effect Importance", y = "Frequency")
 
-combined_plot_r2_logit + theme_minimal() + theme(strip.text.x = element_text(size = 18),
-                                       axis.title.x = element_text(size = 24),
-                                       axis.title.y = element_text(size = 24),
+combined_plot_r2_logit <- (r2_logit_high_neg / r2_logit_low_neg / r2_logit_no / r2_logit_low_pos / r2_logit_high_pos) +
+  plot_layout(ncol = 1, axes = "collect", guides = "auto") +
+  plot_annotation(title = NULL, caption = NULL, tag_levels = NULL) 
+
+
+combined_plot_r2_logit <- combined_plot_r2_logit + theme_minimal() + theme(text = element_text(family="LM Roman 10"), legend.position = "none",
+                                       strip.text.y = element_blank(),
+                                       axis.title.x = element_blank(),
+                                       axis.title.y = element_text(size = 16),
                                        axis.text.x = element_text(size = 12),
                                        axis.text.y = element_text(size = 12)
-                                       ) 
+                                       ) + plot_layout(axes = "collect")
+
 
 combined_plot_r2_logit
 
-combined_plot_r2_poisson <- (r2_poisson_high_neg / r2_poisson_low_neg / r2_poisson_no / r2_poisson_low_pos / r2_poisson_high_pos) +
-  plot_layout(ncol = 1, axis_titles = "collect", guides = "auto") +
-  plot_annotation(title = NULL, caption = NULL, tag_levels = NULL) +
-  labs(x = "Fixed Effect Importance", y = "Frequency")
 
-combined_plot_r2_poisson + theme_minimal() + theme(strip.text.x = element_text(size = 18),
-                                       axis.title.x = element_text(size = 24),
-                                       axis.title.y = element_text(size = 24),
+
+combined_plot_r2_poisson <- (r2_poisson_high_neg / r2_poisson_low_neg / r2_poisson_no / r2_poisson_low_pos / r2_poisson_high_pos) +
+  plot_layout(ncol = 1, axes = "collect", guides = "auto") +
+  plot_annotation(title = NULL, caption = NULL, tag_levels = NULL) 
+
+
+combined_plot_r2_poisson <- combined_plot_r2_poisson + theme_minimal() + theme(text = element_text(family="LM Roman 10"), legend.position = "none",
+                                       strip.text.y = element_blank(),
+                                       axis.title.x = element_blank(),
+                                       axis.title.y = element_text(size = 16),
                                        axis.text.x = element_text(size = 12),
                                        axis.text.y = element_text(size = 12)
-                                       ) 
+                                       ) + plot_layout(axes = "collect")
 
 
 combined_plot_r2_poisson
-```
 
 
-
-```{r}
-plot_folder <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/Master/Latex/Figures/Simulation study"
-
-# Check if the folder exists, if not, create it
-if (!dir.exists(plot_folder)) {
-  dir.create(plot_folder)
-}
-
-ggsave(filename="Random_logit.png", plot=random_logit_plot, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="Random_poisson.png", plot=random_poisson_plot, path=plot_folder, width = 10, height = 6, dpi = 300)
-
-ggsave(filename="Fixed_no_logit.png", plot=logit_no, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="Fixed_no_poisson.png", plot=poisson_no, path=plot_folder, width = 10, height = 6, dpi = 300)
-
-ggsave(filename="Fixed_low_pos_logit.png", plot=logit_low_pos, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="Fixed_low_pos_poisson.png", plot=poisson_low_pos, path=plot_folder, width = 10, height = 6, dpi = 300)
-
-ggsave(filename="Fixed_high_pos_logit.png", plot=logit_high_pos, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="Fixed_high_pos_poisson.png", plot=poisson_high_pos, path=plot_folder, width = 10, height = 6, dpi = 300)
-
-ggsave(filename="Fixed_low_neg_logit.png", plot=logit_low_neg, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="Fixed_low_neg_poisson.png", plot=poisson_low_neg, path=plot_folder, width = 10, height = 6, dpi = 300)
-
-ggsave(filename="Fixed_high_neg_logit.png", plot=logit_high_neg, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="Fixed_high_neg_poisson.png", plot=poisson_high_neg, path=plot_folder, width = 10, height = 6, dpi = 300)
-
-
-ggsave(filename="Fixed_combined_logit.png", plot=combined_plot_logit, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="Fixed_combined_poisson.png", plot=combined_plot_poisson, path=plot_folder, width = 10, height = 6, dpi = 300)
-
-
-ggsave(filename="R2_logit_no.png", plot=r2_logit_no, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="R2_logit_low_pos.png", plot=r2_logit_low_pos, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="R2_logit_low_neg.png", plot=r2_logit_low_neg, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="R2_logit_high_pos.png", plot=r2_logit_high_pos, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="R2_logit_high_neg.png", plot=r2_logit_high_neg, path=plot_folder, width = 10, height = 6, dpi = 300)
-
-ggsave(filename="R2_poisson_no.png", plot=r2_poisson_no, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="R2_poisson_low_pos.png", plot=r2_poisson_low_pos, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="R2_poisson_low_neg.png", plot=r2_poisson_low_neg, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="R2_poisson_high_pos.png", plot=r2_poisson_high_pos, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="R2_poisson_high_neg.png", plot=r2_poisson_high_neg, path=plot_folder, width = 10, height = 6, dpi = 300)
-
-ggsave(filename="R2_combined_logit.png", plot=combined_plot_r2_logit, path=plot_folder, width = 10, height = 6, dpi = 300)
-ggsave(filename="R2_combined_poisson.png", plot=combined_plot_r2_poisson, path=plot_folder, width = 10, height = 6, dpi = 300)
 
 ```
 
