@@ -38,8 +38,6 @@ library(ggplot2)
 library(INLA)
 library(microbenchmark)
 
-data("d.morph")
-data("Cmatrix")
 ```
 
 ## This code contains the models fitted and samples drawn, without needing to access the data:
@@ -199,7 +197,7 @@ sd(samples_tarsus$scaled_random_samples$IDC2)#/sqrt(length(samples_tarsus$scaled
 ```
 
 
-## The below code is made with the data available. A pedigree structure is inialized and the corresponding . 
+## The below code is made with the data d.morph used in the thesis. A pedigree structure is inialized and the corresponding inverse relatedness matrix is called Cmatrix. 
 
 ```{r, echo = FALSE, eval = FALSE}
 data("d.morph")
