@@ -31,3 +31,20 @@
 #' }
 #' @source Data from sparrows on the Helgeland coast, Norway
 "d.morph_no_ringnr"
+
+#' Cmatrix: Inverse of the Relatedness Matrix A
+#'
+#' The `Cmatrix` object is a sparse matrix of class `dgCMatrix` representing the inverse of the relatedness matrix \( A \).
+#' This matrix is used in computations involving genetic relatedness.
+#'
+#' @format A sparse matrix of class `dgCMatrix` with 3116 rows and 3116 columns:
+#' \describe{
+#'   \item{i}{An integer vector indicating the row indices of non-zero elements.}
+#'   \item{p}{An integer vector of pointers to the column indices of non-zero elements.}
+#'   \item{Dim}{An integer vector of length 2 indicating the dimensions of the matrix (3116 x 3116).}
+#'   \item{Dimnames}{A list of length 2 containing the row names (individual IDs) and NULL for column names.}
+#'   \item{x}{A numeric vector of non-zero elements in the matrix.}
+#'   \item{factors}{A list containing factors of the matrix (usually empty).}
+#' }
+#' @source Generated as the inverse of the relatedness matrix \( A \).
+"Cmatrix"
