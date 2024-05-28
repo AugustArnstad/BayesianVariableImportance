@@ -35,7 +35,11 @@ if(!require(devtools)) install.packages("devtools")
 devtools::install_github("AugustArnstad/BayesianVariableImportance")
 library(BayesianVariableImportance)
 library(ggplot2)
+library(INLA)
 library(microbenchmark)
+
+data("d.morph")
+data("Cmatrix")
 
 ```
 
@@ -200,6 +204,7 @@ sd(samples_tarsus$scaled_random_samples$IDC2)#/sqrt(length(samples_tarsus$scaled
 
 ```{r, echo = FALSE, eval = FALSE}
 data("d.morph")
+data("Cmatrix")
 
 str(d.morph)
 ```
@@ -219,7 +224,9 @@ Cmatrix <- solve(AAA)
 # Again, to correct for some numerical instability, we set values <10^{-4} to 0
 Cmatrix <- round(Cmatrix,4)
 Cmatrix[Cmatrix==0] <- 0
+library(Matrix)
 isSymmetric(Cmatrix)
+
 ```
 
 ```{r}
