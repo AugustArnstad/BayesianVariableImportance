@@ -36,6 +36,7 @@ devtools::install_github("AugustArnstad/BayesianVariableImportance")
 library(BayesianVariableImportance)
 library(ggplot2)
 library(microbenchmark)
+getwd()
 ```
 
 ## This code contains the models fitted and samples drawn, without needing to access the data:
@@ -45,6 +46,12 @@ library(microbenchmark)
 # The full code to produce plots is given below, and the data and sourcecode can be found under the folder "Animal model source code and data" in the repository.
 setwd("~/Animal model example/Models and samples")
 
+d.morph <- readRDS("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/BayesianVariableImportance/data/d.morph.rds")
+
+document()
+
+# Save the dataset in the package with the new name
+usethis::use_data(d.morph, overwrite = TRUE)
 
 model_mass <- readRDS("Models and samples/model_mass_10.05.rds")
 samples_mass <- readRDS("Models and samples/samples_mass_10.05.rds")
@@ -201,9 +208,7 @@ sd(samples_tarsus$scaled_random_samples$IDC2)#/sqrt(length(samples_tarsus$scaled
 
 ```{r, echo = FALSE, eval = FALSE}
 # Add your path to the source code file here:
-setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/BayesianVariableImportance/Animal model example")
-setwd("~/BayesianVariableImportance/Animal model example")
-source("../Animal model source code and data/DataPrep.R")
+data("d.morph_no_ringnr")
 str(d.morph)
 
 ```

@@ -1,6 +1,6 @@
-#' d.morph_no_ringnr data
+#' d.morph data
 #'
-#' A dataset containing morphological measurements of some species, excluding the ring number.
+#' A dataset containing morphological measurements of a house sparrow population on the coast of Helgeland, Norway.
 #'
 #' @format A data frame with 4625 rows and 24 variables:
 #' \describe{

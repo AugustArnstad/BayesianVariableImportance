@@ -5,7 +5,7 @@ Version: 0.1.0
 Author: August Arnstad
 Maintainer: August Arnstad <augustarnstad@gmail.com>
 Description: BayesianVariableImportance is a comprehensive R package designed to extend the capabilities of the INLA (Integrated Nested Laplace Approximations) framework, specifically tailored for statistical variance decomposition and posterior sampling. This package introduces the methods from Nakagawa et. al - A general and simple method for obtaining R2 from generalized linear mixed-effects models (2013) and applies them in the Bayesian framework, making it a tool for statisticians, data scientists, and researchers engaged in the fields of epidemiology, environmental sciences, social sciences, and more.
-License:MIT
+License: MIT
 Encoding: UTF-8
 LazyData: true
 Depends:
@@ -15,3 +15,4 @@ Imports:
     ggplot2,
     reshape2,
     tidyr
+RoxygenNote: 7.3.1
