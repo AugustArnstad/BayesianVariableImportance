@@ -366,7 +366,7 @@ fit_gdr2_models <- function(rho_values, beta_true, n, p, a_pi, iter = 10000, cha
     extracted_samples <- rstan::extract(fit, pars = c("R2D2_phi", "R2D2_R2"))
 
     # Store the extracted samples in the results list
-    results[[as.character(rho)]] <- extracted_samples
+    results[[as.character(rho)]] <- extracted_samples. # Only store what is needed to avoid large objects
 
   }
 
