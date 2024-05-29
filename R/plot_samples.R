@@ -16,7 +16,8 @@ plot_samples <- function(samples) {
   if (!is.null(samples$scaled_importance_samples) && dim(samples$scaled_importance_samples)[2] > 0) {
     melted_scaled_importance <- melt(as.data.frame(samples$scaled_importance_samples))
     fixed_effects_plot <- ggplot(melted_scaled_importance, aes(x = value)) +
-      geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.5) +
+      #geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.5) +
+      geom_histogram(fill = "#C6CDF7", alpha = 0.5) +
       geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
       labs(title = "Fixed Effects", x = "Relative Importance", y = "Frequency") +
       theme_minimal() +
@@ -30,7 +31,8 @@ plot_samples <- function(samples) {
   if (!is.null(samples$scaled_random_samples)) {
     melted_scaled_random <- melt(as.data.frame(samples$scaled_random_samples))
     random_effects_plot <- ggplot(melted_scaled_random, aes(x = value)) +
-      geom_histogram(aes(y = ..density..), fill = "#C6F7CD", alpha = 0.5) +
+      #geom_histogram(aes(y = ..density..), fill = "#C6F7CD", alpha = 0.5) +
+      geom_histogram(fill = "#C6F7CD", alpha = 0.5) +
       geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
       labs(title = "Random Effects", x = "Relative Importance", y = "Frequency") +
       theme_minimal() +
@@ -45,7 +47,8 @@ plot_samples <- function(samples) {
     # Extract the actual column name for heritability
     heritability_colname <- names(samples$heritability)
     heritability_plot <- ggplot(samples$heritability, aes(x = !!sym(heritability_colname))) +
-      geom_histogram(aes(y = ..density..), fill = "purple", alpha = 0.5) +
+      #geom_histogram(aes(y = ..density..), fill = "purple", alpha = 0.5) +
+      geom_histogram(fill = "purple", alpha = 0.5) +
       geom_density(color = "purple", adjust = 1.5, linewidth=1.5) +
       labs(title = paste("Heritability of:", heritability_colname), x = heritability_colname, y = "Frequency") +
       theme_minimal() +
@@ -66,7 +69,8 @@ plot_samples <- function(samples) {
 
     # Plot
     R2_plot <- ggplot(R2_long, aes(x = Value, fill = Type)) +
-      geom_histogram(aes(y = ..density..), alpha = 0.5, position = "identity") +
+      #geom_histogram(aes(y = ..density..), alpha = 0.5, position = "identity") +
+      geom_histogram(alpha = 0.5, position = "identity") +
       geom_density(colour = "#E6C6DF", alpha = 0.75, adjust = 1.5, linewidth=1.5) +
       labs(title = "Marginal and Conditional R2", x = "R2 estimate", y = "Frequency") +
       scale_fill_manual(values = c("R2_marginal" = "#C6CDF7", "R2_conditional" = "#C6F7CD")) +
