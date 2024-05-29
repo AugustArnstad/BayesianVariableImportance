@@ -270,7 +270,7 @@ timing_result_mass <- microbenchmark(
   {
     model_mass <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.mass, "gaussian", int_strat="ccd", priors = prior_mass)
 
-    samples_mass <- BayesianVariableImportance::sample_posterior_gaussian(model_mass, formula.mass, d.morph, n_samp=100, additive_param = "IDC2")
+    samples_mass <- BayesianVariableImportance::sample_posterior_gaussian(model_mass, formula.mass, d.morph, n_samp=10000, additive_param = "IDC2")
   },
   times = 1  # Number of times to run the chunk for better accuracy
 )
@@ -278,7 +278,7 @@ timing_result_mass <- microbenchmark(
 print(timing_result_mass)
 
 plots_mass <- BayesianVariableImportance::plot_samples(samples_mass)
-plots_mass$fixed_effects
+
 BayesianVariableImportance::plot_posteriors_and_heritability(model_mass)
 ```
 
