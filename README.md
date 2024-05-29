@@ -88,7 +88,7 @@ A full simulation study, which has been described, reported and discussed in my 
 A case study, following the vignette of the `rptR` package, which has been described, reported and discussed in my master thesis, can be found in the file Stoffel_comparison.Rmd
 
 ## Real data analysis
-A study on the heritability of phenotypic traits in house sparrows is conducted in the file Animal_model.Rmd. The data is not licensed by me to put on Github, but it has been described in the master's thesis, with references to more information.
+A study on the heritability of phenotypic traits in house sparrows is conducted in the file Animal_model.Rmd. Please read the method, results and discussion part of my masters thesis for a full description of the study.
 
 ## Documentation
 Further documentation and function references can be found within the package. Use the standard R help and documentation commands to access detailed information about each function.

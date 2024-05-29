@@ -22,37 +22,37 @@ library(INLA)
 #' data(mtcars)
 #' result <- SVD_decomp(mtcars)
 #' @export
-SVD_decomp <- function(X){
-
-  for (col in colnames(X)) {
-    if (!is.numeric(X[[col]])) {
-      # If column is factor, convert to numeric by converting to integer codes
-      # If column is character, first convert to factor then to numeric
-      X[[col]] <- as.numeric(as.factor(X[[col]]))
-    }
-  }
-
-
-  original_colnames <- colnames(X)
-  X <- scale(X)
-
-  # Calculate eigenvalues and eigenvectors
-  e <- eigen(t(X) %*% X)
-  Q <- e$vectors
-  D <- diag(sqrt(e$values), nrow = nrow(Q))
-  Dinv <- diag(1/sqrt(e$values), nrow = nrow(Q))
-
-  # Calculate R_xx^(-0.5)
-  R <- sqrt(nrow(X) - 1) * Q %*% Dinv %*% t(Q)
-
-  # Calculate the transformed numerical fixed effects
-  Z <- X %*% R
-  colnames(Z) <- original_colnames <- colnames(X)
-
-
-  lambda <- 1 / sqrt(nrow(X) - 1) * Q %*% D %*% t(Q)
-  return(list(Z = Z, R = R, lambda = lambda))
-}
+# SVD_decomp <- function(X){
+#
+#   for (col in colnames(X)) {
+#     if (!is.numeric(X[[col]])) {
+#       # If column is factor, convert to numeric by converting to integer codes
+#       # If column is character, first convert to factor then to numeric
+#       X[[col]] <- as.numeric(as.factor(X[[col]]))
+#     }
+#   }
+#
+#
+#   original_colnames <- colnames(X)
+#   X <- scale(X)
+#
+#   # Calculate eigenvalues and eigenvectors
+#   e <- eigen(t(X) %*% X)
+#   Q <- e$vectors
+#   D <- diag(sqrt(e$values), nrow = nrow(Q))
+#   Dinv <- diag(1/sqrt(e$values), nrow = nrow(Q))
+#
+#   # Calculate R_xx^(-0.5)
+#   R <- sqrt(nrow(X) - 1) * Q %*% Dinv %*% t(Q)
+#
+#   # Calculate the transformed numerical fixed effects
+#   Z <- X %*% R
+#   colnames(Z) <- original_colnames <- colnames(X)
+#
+#
+#   lambda <- 1 / sqrt(nrow(X) - 1) * Q %*% D %*% t(Q)
+#   return(list(Z = Z, R = R, lambda = lambda))
+# }
 
 
 #' Extract Fixed and Random Effects from a Model Formula
@@ -66,38 +66,38 @@ SVD_decomp <- function(X){
 #' formula <- y ~ x + f(group, model = "iid")
 #' effects <- extract_effects(formula)
 #' @export
-extract_effects <- function(formula) {
-  # Get the terms object from the formula
-  formula_terms <- terms(formula)
-
-  # Extract term labels
-  term_labels <- attr(formula_terms, "term.labels")
-
-  # Initialize lists to store fixed and random effects
-  fixed_effects <- character()
-  random_effects <- character()
-
-  # Iterate through term labels to categorize them
-  for (label in term_labels) {
-    if (grepl("^f\\(", label)) {
-      # If label starts with 'f(', it's a random effect
-      random_effects <- c(random_effects, label)
-    } else {
-      # Otherwise, it's a fixed effect
-      fixed_effects <- c(fixed_effects, label)
-    }
-  }
-
-  if (length(fixed_effects) == 0){
-    fixed_effects=NULL
-  }
-  if (length(random_effects) == 0){
-    random_effects=NULL
-  }
-
-  # Return a list containing both fixed and random effects
-  return(list(fixed_effects = fixed_effects, random_effects = random_effects))
-}
+# extract_effects <- function(formula) {
+#   # Get the terms object from the formula
+#   formula_terms <- terms(formula)
+#
+#   # Extract term labels
+#   term_labels <- attr(formula_terms, "term.labels")
+#
+#   # Initialize lists to store fixed and random effects
+#   fixed_effects <- character()
+#   random_effects <- character()
+#
+#   # Iterate through term labels to categorize them
+#   for (label in term_labels) {
+#     if (grepl("^f\\(", label)) {
+#       # If label starts with 'f(', it's a random effect
+#       random_effects <- c(random_effects, label)
+#     } else {
+#       # Otherwise, it's a fixed effect
+#       fixed_effects <- c(fixed_effects, label)
+#     }
+#   }
+#
+#   if (length(fixed_effects) == 0){
+#     fixed_effects=NULL
+#   }
+#   if (length(random_effects) == 0){
+#     random_effects=NULL
+#   }
+#
+#   # Return a list containing both fixed and random effects
+#   return(list(fixed_effects = fixed_effects, random_effects = random_effects))
+# }
 
 
 #' Perform INLA Analysis on Specified Data and Formula
@@ -118,52 +118,52 @@ extract_effects <- function(formula) {
 #' formula <- y ~ x + f(group, model = "iid")
 #' result <- perform_inla_analysis(data, formula, family = "binomial")
 #' @export
-perform_inla_analysis <- function(data, formula, family, link_func="identity", inla_strat="simplified.laplace", int_strat = "auto", priors = NULL) {
-
-  data_copy <- data
-
-  response <- all.vars(formula)[1]
-
-
-  # Set default priors if none are specified
-  if (is.null(priors) && !family %in% c("binomial", "poisson")) {
-    priors <- list(
-      prec = list(
-        prior = "pc.prec",
-        param = c(1, 0.01),
-        initial = log(1)
-      )
-    )
-  }
-
-
-  effects <- extract_effects(formula)
-  fixed_effects <- effects$fixed_effects
-
-  #   if(!is.null(fixed_effects)){
-  if(length(fixed_effects)>1){
-    X <- data_copy[, c(fixed_effects)]
-
-    SVD <- SVD_decomp(X)
-
-    data_copy[, c(fixed_effects)] <- SVD$Z
-  }
-
-  scaled <- scale(data_copy[, response])
-
-
-  # Fit the model using INLA
-  inla_result <- inla(formula,
-                      family = family,
-                      data = data_copy,
-                      control.family = list(hyper = priors, link = link_func),
-                      control.inla = list(strategy = inla_strat, int.strategy=int_strat),
-                      control.compute = list(dic = FALSE, return.marginals=TRUE, config=TRUE, waic = TRUE))
-
-
-  # Return the INLA result object
-  return(inla_result)
-}
+# perform_inla_analysis <- function(data, formula, family, link_func="identity", inla_strat="simplified.laplace", int_strat = "auto", priors = NULL) {
+#
+#   data_copy <- data
+#
+#   response <- all.vars(formula)[1]
+#
+#
+#   # Set default priors if none are specified
+#   if (is.null(priors) && !family %in% c("binomial", "poisson")) {
+#     priors <- list(
+#       prec = list(
+#         prior = "pc.prec",
+#         param = c(1, 0.01),
+#         initial = log(1)
+#       )
+#     )
+#   }
+#
+#
+#   effects <- extract_effects(formula)
+#   fixed_effects <- effects$fixed_effects
+#
+#   #   if(!is.null(fixed_effects)){
+#   if(length(fixed_effects)>1){
+#     X <- data_copy[, c(fixed_effects)]
+#
+#     SVD <- SVD_decomp(X)
+#
+#     data_copy[, c(fixed_effects)] <- SVD$Z
+#   }
+#
+#   scaled <- scale(data_copy[, response])
+#
+#
+#   # Fit the model using INLA
+#   inla_result <- inla(formula,
+#                       family = family,
+#                       data = data_copy,
+#                       control.family = list(hyper = priors, link = link_func),
+#                       control.inla = list(strategy = inla_strat, int.strategy=int_strat),
+#                       control.compute = list(dic = FALSE, return.marginals=TRUE, config=TRUE, waic = TRUE))
+#
+#
+#   # Return the INLA result object
+#   return(inla_result)
+# }
 
 #' Extract Importance of Fixed and Random Effects
 #'
@@ -177,96 +177,96 @@ perform_inla_analysis <- function(data, formula, family, link_func="identity", i
 #' # Assuming `model` is an INLA model object with log, logit or probit link and `data` contains appropriate predictors
 #' importance <- extract_importances(model, data, dist_factor = pi^2 / 3)
 #' @export
-extract_importances <- function(model, data, dist_factor=NULL) {
-
-  # Calculate residual variance
-  residual_var <- 0
-
-  if ("Precision for the Gaussian observations" %in% rownames(model$summary.hyperpar)) {
-    residual_var <- 1 / model$summary.hyperpar["Precision for the Gaussian observations", "mean"]
-    randoms <- summary(model)$hyperpar[, c("mode")]
-    random_effects <- randoms[-1]
-    random_names <- rownames(model$summary.hyperpar)[-1]
-  }else{
-    randoms <- summary(model)$hyperpar[, c("mode")]
-    random_names <- rownames(model$summary.hyperpar)
-  }
-
-  imp_random <- setNames(numeric(length(random_names)), random_names)
-  for (i in seq_along(random_names)) {
-    prec_random <- summary(model)$hyperpar[c(i), c("mode")]
-    imp_random[i] <- 1/prec_random
-  }
-
-  random_names <- gsub("Precision for ", "", random_names)
-
-  fixed_means <- summary(model)$fixed[, c("mode")]
-  fixed_effects <- fixed_means[-1]
-  fixed_names <- names(fixed_effects)
-
-  SVD <- BayesianVariableImportance::SVD_decomp(data[, fixed_names])
-
-  imp_fixed <- setNames(numeric(length(fixed_effects)), fixed_names)
-
-  imp_fixed <- (SVD$lambda^2 %*% (fixed_effects^2))
-
-  fam <- model$.args$family
-
-  link <- model$.args$control.family[[1]]$link
-
-  if (is.null(dist_factor)){
-    if (fam == "binomial"){
-      if (link == "probit"){
-        dist_factor <- 1
-      } else if (link == "logit"){
-        dist_factor <- pi^2/3
-
-      }
-    }else if (fam == "poisson"){
-      if (link == "log"){
-        intercept <- model$summary.fixed["(Intercept)", "mean"]
-        lambda_pois <- exp(intercept + 0.5*(sum(imp_random) + sum(imp_fixed)))
-        dist_factor <- log(1 + 1/lambda_pois)
-      }else if (link == "root"){
-        dist_factor <- 0.25
-      }
-    }else{
-      dist_factor <- 0
-    }
-  }
-
-
-  # Calculate total variance
-  total_var <- as.double(dist_factor + sum(imp_random) + sum(imp_fixed) + residual_var)
-
-
-  # Calculate marginal and conditional R^2
-  r2m <- sum(imp_fixed) / total_var
-  r2c <- (sum(imp_fixed) + sum(imp_random)) / total_var
-
-  residual_imp <- 0
-  if ("Precision for the Gaussian observations" %in% rownames(model$summary.hyperpar)) {
-    residual_imp <- 1 - r2c
-  }else{
-    residual_imp <- NA
-  }
-
-  # Normalize importances
-  imp_random <- imp_random / total_var
-  imp_fixed <- imp_fixed / total_var
-
-  #rownames(imp_fixed) <- fixed_names
-
-
-  # Return the results as a list with named importances
-  return(list(
-    random_importance = imp_random,
-    fixed_importance = imp_fixed,
-    residual_importance = residual_imp,
-    r2m = r2m,
-    r2c = r2c
-  ))
-}
+# extract_importances <- function(model, data, dist_factor=NULL) {
+#
+#   # Calculate residual variance
+#   residual_var <- 0
+#
+#   if ("Precision for the Gaussian observations" %in% rownames(model$summary.hyperpar)) {
+#     residual_var <- 1 / model$summary.hyperpar["Precision for the Gaussian observations", "mean"]
+#     randoms <- summary(model)$hyperpar[, c("mode")]
+#     random_effects <- randoms[-1]
+#     random_names <- rownames(model$summary.hyperpar)[-1]
+#   }else{
+#     randoms <- summary(model)$hyperpar[, c("mode")]
+#     random_names <- rownames(model$summary.hyperpar)
+#   }
+#
+#   imp_random <- setNames(numeric(length(random_names)), random_names)
+#   for (i in seq_along(random_names)) {
+#     prec_random <- summary(model)$hyperpar[c(i), c("mode")]
+#     imp_random[i] <- 1/prec_random
+#   }
+#
+#   random_names <- gsub("Precision for ", "", random_names)
+#
+#   fixed_means <- summary(model)$fixed[, c("mode")]
+#   fixed_effects <- fixed_means[-1]
+#   fixed_names <- names(fixed_effects)
+#
+#   SVD <- BayesianVariableImportance::SVD_decomp(data[, fixed_names])
+#
+#   imp_fixed <- setNames(numeric(length(fixed_effects)), fixed_names)
+#
+#   imp_fixed <- (SVD$lambda^2 %*% (fixed_effects^2))
+#
+#   fam <- model$.args$family
+#
+#   link <- model$.args$control.family[[1]]$link
+#
+#   if (is.null(dist_factor)){
+#     if (fam == "binomial"){
+#       if (link == "probit"){
+#         dist_factor <- 1
+#       } else if (link == "logit"){
+#         dist_factor <- pi^2/3
+#
+#       }
+#     }else if (fam == "poisson"){
+#       if (link == "log"){
+#         intercept <- model$summary.fixed["(Intercept)", "mean"]
+#         lambda_pois <- exp(intercept + 0.5*(sum(imp_random) + sum(imp_fixed)))
+#         dist_factor <- log(1 + 1/lambda_pois)
+#       }else if (link == "root"){
+#         dist_factor <- 0.25
+#       }
+#     }else{
+#       dist_factor <- 0
+#     }
+#   }
+#
+#
+#   # Calculate total variance
+#   total_var <- as.double(dist_factor + sum(imp_random) + sum(imp_fixed) + residual_var)
+#
+#
+#   # Calculate marginal and conditional R^2
+#   r2m <- sum(imp_fixed) / total_var
+#   r2c <- (sum(imp_fixed) + sum(imp_random)) / total_var
+#
+#   residual_imp <- 0
+#   if ("Precision for the Gaussian observations" %in% rownames(model$summary.hyperpar)) {
+#     residual_imp <- 1 - r2c
+#   }else{
+#     residual_imp <- NA
+#   }
+#
+#   # Normalize importances
+#   imp_random <- imp_random / total_var
+#   imp_fixed <- imp_fixed / total_var
+#
+#   #rownames(imp_fixed) <- fixed_names
+#
+#
+#   # Return the results as a list with named importances
+#   return(list(
+#     random_importance = imp_random,
+#     fixed_importance = imp_fixed,
+#     residual_importance = residual_imp,
+#     r2m = r2m,
+#     r2c = r2c
+#   ))
+# }
 
 #' Sample Posterior Distributions for Gaussian Model Parameters
 #'
@@ -283,174 +283,174 @@ extract_importances <- function(model, data, dist_factor=NULL) {
 #' # Assuming 'result' is an INLA model object and 'data_binomial' is available
 #' samples <- sample_posterior_gaussian(result, formula, data_binomial, n_samp = 100)
 #' @export
-sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additive_param=NULL, repeatability = FALSE) {
-
-  response <- all.vars(formula)[1]
-  scaled_response <- scale(data[, response])
-  scale_const <- attr(scaled_response, 'scaled:scale')
-
-  effects <- extract_effects(formula)
-  fixed <- effects$fixed_effects
-
-  response <- all.vars(formula)[1]
-
-  variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
-
-  hyperparam_names <- names(variance_marginals_list)
-
-  random <- c()
-  correlations <- c()
-
-  for (name in hyperparam_names) {
-    if (grepl("Precision", name)) {
-      # If the name contains "Precision", it's a random effect
-      random <- c(random, name)
-    }else {
-      # Otherwise, consider it a correlation parameter
-      correlations <- c(correlations, name)
-    }
-  }
-
-
-  random <- gsub("Precision for the ", "", random)
-  random <- gsub("Precision for ", "", random)
-
-
-  sum <- summary(model)
-  iidkd_indices <- which(sum$random.model == "IIDKD model")
-
-  if (length(iidkd_indices) != 0) {
-    iidkd_names <- sum$random.names[iidkd_indices]
-
-    qq_matrices <- list()
-
-    # Loop over each IIDKD model effect to perform sampling and calculate qq
-    for (iidkd_effect in iidkd_names) {
-      xx <- inla.iidkd.sample(500, model, iidkd_effect)
-      order <- dim(xx[[1]])[1]
-      qq <- matrix(rowMeans(matrix(unlist(xx), nrow = order^2)), order, order)
-      qq_matrices[[iidkd_effect]] <- qq
-    }
-  }else{
-    qq_matrices <- NULL
-  }
-
-
-  beta_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
-  scaled_beta_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
-  importance_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
-  scaled_importance_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
-  names(importance_mat) <- fixed
-  R2_mat <- matrix(NA, nrow=n_samp, ncol=1)
-  R2_cond_mat <- matrix(NA, nrow=n_samp, ncol=1)
-  var_pred_mat <- matrix(NA, nrow=n_samp, ncol=1)
-  h2_mat <- matrix(NA, nrow=n_samp, ncol=1)
-  repeat_mat <- matrix(NA, nrow=n_samp, ncol=1)
-  random_mat <- matrix(NA, nrow=n_samp, ncol=length(random))
-  scaled_random_mat <- matrix(NA, nrow=n_samp, ncol=length(random))
-
-  if(!is.null(fixed)){
-    SVD <- VariableImportanceINLA::SVD_decomp(data[fixed])
-
-    lambda <- SVD$lambda
-  }else {
-    lambda <- diag(length(fixed))
-  }
-
-  samps_Z <- inla.posterior.sample(model, n = n_samp)
-
-  latent_row_names <- rownames(samps_Z[[1]]$latent)
-
-  output_length=length(samps_Z[[1]]$latent)
-
-  not_na = which(!is.na(data[response]))
-
-  for (i in 1:n_samp){
-    # Extract all sampled values, separate them by covariate/predictor, and assign them to the sampled matrix
-    samples_length <- 0
-    predictor <- paste0("^Predictor:")
-    predictor_names <- grep(predictor, latent_row_names, value = TRUE)
-    predictor_samples <- samps_Z[[i]]$latent[predictor_names, , drop = FALSE]
-    samples_tot <- length(predictor_samples)
-
-    gaussian <- data[[response]][not_na] - predictor_samples[not_na]
-    var_pred_mat[i] <- var(predictor_samples)
-    random_mat[i, 1] <- var(gaussian)
-
-
-    if (length(random)>1){
-      for (j in 2:length(random)){
-        pattern <- paste0("^", random[j], ":")
-        random_names <- grep(pattern, latent_row_names, value = TRUE)
-        random_samples <- samps_Z[[i]]$latent[random_names, , drop = FALSE]
-        samples_tot <- samples_tot + length(random_samples)
-        random_mat[i, j] <- var(random_samples)
-      }
-    }else{
-      if (i==n_samp){
-        print("No random effects, only resiudal variance")
-      }
-
-    }
-
-    beta <- samps_Z[[i]]$latent[(output_length-(length(fixed)-1)):output_length]  #Skip intercept
-    beta_mat[i, ] <- beta
-    importance_mat[i, ] <- lambda^2 %*% beta^2
-
-
-  }
-
-  rowsum <- rowSums(random_mat) + rowSums(importance_mat)
-  scaled_random_mat <- random_mat/rowsum
-  scaled_beta_mat <- beta_mat/rowsum
-  scaled_importance_mat <- importance_mat/rowsum
-
-  R2_mat <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat))
-
-  if (length(random)>2){
-    R2_cond <- (rowSums(importance_mat) + rowSums(random_mat[, -1])) / (rowSums(importance_mat) + rowSums(random_mat))
-  } else if (length(random)==2){
-    R2_cond <- (rowSums(importance_mat) + random_mat[, -1]) / (rowSums(importance_mat) + rowSums(random_mat))
-  }else{
-    R2_cond <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat))
-  }
-
-  beta_mat <- as.data.frame(beta_mat)
-  names(beta_mat) <- fixed
-  importance_mat <- as.data.frame(importance_mat)
-  names(importance_mat) <- fixed
-  scaled_beta_mat <- as.data.frame(scaled_beta_mat)
-  names(scaled_beta_mat) <- fixed
-  scaled_importance_mat <- as.data.frame(scaled_importance_mat)
-  names(scaled_importance_mat) <- fixed
-
-  random_mat <- as.data.frame(random_mat)
-  names(random_mat) <- random
-  scaled_random_mat <- as.data.frame(scaled_random_mat)
-  names(scaled_random_mat) <- random
-
-  R2_mat <- as.data.frame(R2_mat)
-  names(R2_mat) <- "Marginal R2"
-  R2_cond <- as.data.frame(R2_cond)
-  names(R2_cond) <- "Conditional R2"
-
-  if (!is.null(additive_param) && repeatability){
-    repeat_mat <- random_mat[, additive_param]/(rowSums(random_mat))
-    repeat_mat <- as.data.frame(repeat_mat)
-    names(repeat_mat) <- paste0("Repeatability of: ", additive_param)
-  }
-
-  return(list(beta_samples = beta_mat,
-              importance_samples = importance_mat,
-              scaled_beta_samples = scaled_beta_mat,
-              scaled_importance_samples = scaled_importance_mat,
-              random_samples = random_mat,
-              scaled_random_samples = scaled_random_mat,
-              R2_marginal = R2_mat,
-              R2_conditional = R2_cond,
-              var_y = var_pred_mat,
-              repeatability = repeat_mat))
-}
+# sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additive_param=NULL, repeatability = FALSE) {
+#
+#   response <- all.vars(formula)[1]
+#   scaled_response <- scale(data[, response])
+#   scale_const <- attr(scaled_response, 'scaled:scale')
+#
+#   effects <- extract_effects(formula)
+#   fixed <- effects$fixed_effects
+#
+#   response <- all.vars(formula)[1]
+#
+#   variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
+#
+#   hyperparam_names <- names(variance_marginals_list)
+#
+#   random <- c()
+#   correlations <- c()
+#
+#   for (name in hyperparam_names) {
+#     if (grepl("Precision", name)) {
+#       # If the name contains "Precision", it's a random effect
+#       random <- c(random, name)
+#     }else {
+#       # Otherwise, consider it a correlation parameter
+#       correlations <- c(correlations, name)
+#     }
+#   }
+#
+#
+#   random <- gsub("Precision for the ", "", random)
+#   random <- gsub("Precision for ", "", random)
+#
+#
+#   sum <- summary(model)
+#   iidkd_indices <- which(sum$random.model == "IIDKD model")
+#
+#   if (length(iidkd_indices) != 0) {
+#     iidkd_names <- sum$random.names[iidkd_indices]
+#
+#     qq_matrices <- list()
+#
+#     # Loop over each IIDKD model effect to perform sampling and calculate qq
+#     for (iidkd_effect in iidkd_names) {
+#       xx <- inla.iidkd.sample(500, model, iidkd_effect)
+#       order <- dim(xx[[1]])[1]
+#       qq <- matrix(rowMeans(matrix(unlist(xx), nrow = order^2)), order, order)
+#       qq_matrices[[iidkd_effect]] <- qq
+#     }
+#   }else{
+#     qq_matrices <- NULL
+#   }
+#
+#
+#   beta_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
+#   scaled_beta_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
+#   importance_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
+#   scaled_importance_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
+#   names(importance_mat) <- fixed
+#   R2_mat <- matrix(NA, nrow=n_samp, ncol=1)
+#   R2_cond_mat <- matrix(NA, nrow=n_samp, ncol=1)
+#   var_pred_mat <- matrix(NA, nrow=n_samp, ncol=1)
+#   h2_mat <- matrix(NA, nrow=n_samp, ncol=1)
+#   repeat_mat <- matrix(NA, nrow=n_samp, ncol=1)
+#   random_mat <- matrix(NA, nrow=n_samp, ncol=length(random))
+#   scaled_random_mat <- matrix(NA, nrow=n_samp, ncol=length(random))
+#
+#   if(!is.null(fixed)){
+#     SVD <- VariableImportanceINLA::SVD_decomp(data[fixed])
+#
+#     lambda <- SVD$lambda
+#   }else {
+#     lambda <- diag(length(fixed))
+#   }
+#
+#   samps_Z <- inla.posterior.sample(model, n = n_samp)
+#
+#   latent_row_names <- rownames(samps_Z[[1]]$latent)
+#
+#   output_length=length(samps_Z[[1]]$latent)
+#
+#   not_na = which(!is.na(data[response]))
+#
+#   for (i in 1:n_samp){
+#     # Extract all sampled values, separate them by covariate/predictor, and assign them to the sampled matrix
+#     samples_length <- 0
+#     predictor <- paste0("^Predictor:")
+#     predictor_names <- grep(predictor, latent_row_names, value = TRUE)
+#     predictor_samples <- samps_Z[[i]]$latent[predictor_names, , drop = FALSE]
+#     samples_tot <- length(predictor_samples)
+#
+#     gaussian <- data[[response]][not_na] - predictor_samples[not_na]
+#     var_pred_mat[i] <- var(predictor_samples)
+#     random_mat[i, 1] <- var(gaussian)
+#
+#
+#     if (length(random)>1){
+#       for (j in 2:length(random)){
+#         pattern <- paste0("^", random[j], ":")
+#         random_names <- grep(pattern, latent_row_names, value = TRUE)
+#         random_samples <- samps_Z[[i]]$latent[random_names, , drop = FALSE]
+#         samples_tot <- samples_tot + length(random_samples)
+#         random_mat[i, j] <- var(random_samples)
+#       }
+#     }else{
+#       if (i==n_samp){
+#         print("No random effects, only resiudal variance")
+#       }
+#
+#     }
+#
+#     beta <- samps_Z[[i]]$latent[(output_length-(length(fixed)-1)):output_length]  #Skip intercept
+#     beta_mat[i, ] <- beta
+#     importance_mat[i, ] <- lambda^2 %*% beta^2
+#
+#
+#   }
+#
+#   rowsum <- rowSums(random_mat) + rowSums(importance_mat)
+#   scaled_random_mat <- random_mat/rowsum
+#   scaled_beta_mat <- beta_mat/rowsum
+#   scaled_importance_mat <- importance_mat/rowsum
+#
+#   R2_mat <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat))
+#
+#   if (length(random)>2){
+#     R2_cond <- (rowSums(importance_mat) + rowSums(random_mat[, -1])) / (rowSums(importance_mat) + rowSums(random_mat))
+#   } else if (length(random)==2){
+#     R2_cond <- (rowSums(importance_mat) + random_mat[, -1]) / (rowSums(importance_mat) + rowSums(random_mat))
+#   }else{
+#     R2_cond <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat))
+#   }
+#
+#   beta_mat <- as.data.frame(beta_mat)
+#   names(beta_mat) <- fixed
+#   importance_mat <- as.data.frame(importance_mat)
+#   names(importance_mat) <- fixed
+#   scaled_beta_mat <- as.data.frame(scaled_beta_mat)
+#   names(scaled_beta_mat) <- fixed
+#   scaled_importance_mat <- as.data.frame(scaled_importance_mat)
+#   names(scaled_importance_mat) <- fixed
+#
+#   random_mat <- as.data.frame(random_mat)
+#   names(random_mat) <- random
+#   scaled_random_mat <- as.data.frame(scaled_random_mat)
+#   names(scaled_random_mat) <- random
+#
+#   R2_mat <- as.data.frame(R2_mat)
+#   names(R2_mat) <- "Marginal R2"
+#   R2_cond <- as.data.frame(R2_cond)
+#   names(R2_cond) <- "Conditional R2"
+#
+#   if (!is.null(additive_param) && repeatability){
+#     repeat_mat <- random_mat[, additive_param]/(rowSums(random_mat))
+#     repeat_mat <- as.data.frame(repeat_mat)
+#     names(repeat_mat) <- paste0("Repeatability of: ", additive_param)
+#   }
+#
+#   return(list(beta_samples = beta_mat,
+#               importance_samples = importance_mat,
+#               scaled_beta_samples = scaled_beta_mat,
+#               scaled_importance_samples = scaled_importance_mat,
+#               random_samples = random_mat,
+#               scaled_random_samples = scaled_random_mat,
+#               R2_marginal = R2_mat,
+#               R2_conditional = R2_cond,
+#               var_y = var_pred_mat,
+#               repeatability = repeat_mat))
+# }
 
 
 #' Sample Posterior Distributions for Non-Gaussian Model Parameters
@@ -468,168 +468,168 @@ sample_posterior_gaussian <- function(model, formula, data, n_samp=1000, additiv
 #' # Assuming 'result' is an INLA model object and 'data_binomial' is available
 #' samples <- sample_posterior_count(result, formula, data_binomial, n_samp = 100)
 #' @export
-sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_param=NULL, repeatability = FALSE) {
-
-
-  response <- all.vars(formula)[1]
-  scaled_response <- scale(data[, response])
-  scale_const <- attr(scaled_response, 'scaled:scale')
-
-  effects <- extract_effects(formula)
-  fixed <- effects$fixed_effects
-
-  fam <- model$.args$family
-
-  link <- model$.args$control.family[[1]]$link
-
-  distribution = paste0("Distributional variance: ", link)
-
-  response <- all.vars(formula)[1]
-
-  variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
-  random <- names(variance_marginals_list)
-  random <- gsub("Precision for the ", "", random)
-  random <- gsub("Precision for ", "", random)
-
-  random <- c(distribution, random)
-
-  beta_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
-  scaled_beta_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
-  importance_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
-  scaled_importance_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
-  names(importance_mat) <- fixed
-  R2_mat <- matrix(NA, nrow=n_samp, ncol=1)
-  R2_cond_mat <- matrix(NA, nrow=n_samp, ncol=1)
-  var_pred_mat <- matrix(NA, nrow=n_samp, ncol=1)
-  h2_mat <- matrix(NA, nrow=n_samp, ncol=1)
-  repeat_mat <- matrix(NA, nrow=n_samp, ncol=1)
-  random_mat <- matrix(NA, nrow=n_samp, ncol=length(random))
-  scaled_random_mat <- matrix(NA, nrow=n_samp, ncol=length(random))
-
-  if(!is.null(fixed)){
-    SVD <- VariableImportanceINLA::SVD_decomp(data[fixed])
-
-    lambda <- SVD$lambda
-  }else {
-    lambda <- diag(length(fixed))
-  }
-
-  samps_Z <- inla.posterior.sample(model, n = n_samp)
-
-  latent_row_names <- rownames(samps_Z[[1]]$latent)
-
-  output_length=length(samps_Z[[1]]$latent)
-
-  not_na = which(!is.na(data[response]))
-
-  for (i in 1:n_samp){
-    # Extract all sampled values, separate them by covariate/predictor, and assign them to the sampled matrix
-    samples_length <- 0
-    predictor <- paste0("^Predictor:")
-    predictor_names <- grep(predictor, latent_row_names, value = TRUE)
-    predictor_samples <- samps_Z[[i]]$latent[predictor_names, , drop = FALSE]
-    samples_tot <- length(predictor_samples)
-
-
-    total_latent_var <- 0
-    if (length(random)>1){
-      for (j in 2:length(random)){
-        pattern <- paste0("^", random[j], ":")
-        random_names <- grep(pattern, latent_row_names, value = TRUE)
-        random_samples <- samps_Z[[i]]$latent[random_names, , drop = FALSE]
-        samples_tot <- samples_tot + length(random_samples)
-        random_mat[i, j] <- var(random_samples)
-
-        total_latent_var <- total_latent_var + var(random_samples)
-      }
-    }else{
-      if (i==n_samp){
-        print("No random effects, only resiudal variance")
-      }
-
-    }
-
-    if (fam == "binomial"){
-      if (link == "probit"){
-        distribution_var <- 1
-      } else if (link == "logit"){
-        distribution_var <- pi^2/3
-
-        # I think this could be difficult to implement. Ask Steffi.
-
-        #intercept <- samps_Z[[i]]$latent[output_length-length(fixed)]
-        #fixed_contribution <- as.matrix(data[, fixed]) %*% samps_Z[[i]]$latent[(samples_tot+2):output_length]
-
-        #distribution_var <- inv.logit(intercept + fixed_contribution - 0.5*total_latent_var * tanh(((intercept+)*(1+2exp(-0.5*total_latent_var)))/6))
-      }
-    }else if (fam == "poisson"){
-      if (link == "log"){
-        intercept <- samps_Z[[i]]$latent[output_length-length(fixed)]
-        lambda_pois <- exp(intercept + 0.5*total_latent_var)
-        distribution_var <- log(1 + 1/lambda_pois)
-      }else if (link == "root"){
-        distribution_var <- 0.25
-      }
-    }
-
-    random_mat[i, 1] <- distribution_var
-
-    beta <- samps_Z[[i]]$latent[(samples_tot+2):output_length]  #Skip intercept
-    beta_mat[i, ] <- beta
-    importance_mat[i, ] <- lambda^2 %*% beta^2
-  }
-
-  rowsum <- rowSums(random_mat) + rowSums(importance_mat)
-  scaled_random_mat <- random_mat/rowsum
-  scaled_beta_mat <- beta_mat/rowsum
-  scaled_importance_mat <- importance_mat/rowsum
-
-  R2_mat <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat))
-
-  if (length(random)>2){
-    R2_cond <- (rowSums(importance_mat) + rowSums(random_mat[, -1])) / (rowSums(importance_mat) + rowSums(random_mat))
-  }else if (length(random)==2){
-    R2_cond <- (rowSums(importance_mat) + random_mat[, -1] ) / (rowSums(importance_mat) + rowSums(random_mat))
-  }else{
-    R2_cond <- rowSums(importance_mat)  / (rowSums(importance_mat) + rowSums(random_mat))
-  }
-
-  beta_mat <- as.data.frame(beta_mat)
-  names(beta_mat) <- fixed
-  importance_mat <- as.data.frame(importance_mat)
-  names(importance_mat) <- fixed
-  scaled_beta_mat <- as.data.frame(scaled_beta_mat)
-  names(scaled_beta_mat) <- fixed
-  scaled_importance_mat <- as.data.frame(scaled_importance_mat)
-  names(scaled_importance_mat) <- fixed
-
-  random_mat <- as.data.frame(random_mat)
-  names(random_mat) <- random
-  scaled_random_mat <- as.data.frame(scaled_random_mat)
-  names(scaled_random_mat) <- random
-
-  R2_mat <- as.data.frame(R2_mat)
-  names(R2_mat) <- "Marginal R2"
-  R2_cond <- as.data.frame(R2_cond)
-  names(R2_cond) <- "Conditional R2"
-
-  if (!is.null(additive_param) && repeatability){
-    repeat_mat <- random_mat[, additive_param]/(rowSums(random_mat))
-    repeat_mat <- as.data.frame(repeat_mat)
-    names(repeat_mat) <- paste0("Repeatability of: ", additive_param)
-  }
-
-  return(list(beta_samples = beta_mat,
-              importance_samples = importance_mat,
-              scaled_beta_samples = scaled_beta_mat,
-              scaled_importance_samples = scaled_importance_mat,
-              random_samples = random_mat,
-              scaled_random_samples = scaled_random_mat,
-              R2_marginal = R2_mat,
-              R2_conditional = R2_cond,
-              var_y = var_pred_mat,
-              repeatability = repeat_mat))
-}
+# sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_param=NULL, repeatability = FALSE) {
+#
+#
+#   response <- all.vars(formula)[1]
+#   scaled_response <- scale(data[, response])
+#   scale_const <- attr(scaled_response, 'scaled:scale')
+#
+#   effects <- extract_effects(formula)
+#   fixed <- effects$fixed_effects
+#
+#   fam <- model$.args$family
+#
+#   link <- model$.args$control.family[[1]]$link
+#
+#   distribution = paste0("Distributional variance: ", link)
+#
+#   response <- all.vars(formula)[1]
+#
+#   variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
+#   random <- names(variance_marginals_list)
+#   random <- gsub("Precision for the ", "", random)
+#   random <- gsub("Precision for ", "", random)
+#
+#   random <- c(distribution, random)
+#
+#   beta_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
+#   scaled_beta_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
+#   importance_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
+#   scaled_importance_mat <- matrix(NA, nrow=n_samp, ncol=length(fixed))
+#   names(importance_mat) <- fixed
+#   R2_mat <- matrix(NA, nrow=n_samp, ncol=1)
+#   R2_cond_mat <- matrix(NA, nrow=n_samp, ncol=1)
+#   var_pred_mat <- matrix(NA, nrow=n_samp, ncol=1)
+#   h2_mat <- matrix(NA, nrow=n_samp, ncol=1)
+#   repeat_mat <- matrix(NA, nrow=n_samp, ncol=1)
+#   random_mat <- matrix(NA, nrow=n_samp, ncol=length(random))
+#   scaled_random_mat <- matrix(NA, nrow=n_samp, ncol=length(random))
+#
+#   if(!is.null(fixed)){
+#     SVD <- VariableImportanceINLA::SVD_decomp(data[fixed])
+#
+#     lambda <- SVD$lambda
+#   }else {
+#     lambda <- diag(length(fixed))
+#   }
+#
+#   samps_Z <- inla.posterior.sample(model, n = n_samp)
+#
+#   latent_row_names <- rownames(samps_Z[[1]]$latent)
+#
+#   output_length=length(samps_Z[[1]]$latent)
+#
+#   not_na = which(!is.na(data[response]))
+#
+#   for (i in 1:n_samp){
+#     # Extract all sampled values, separate them by covariate/predictor, and assign them to the sampled matrix
+#     samples_length <- 0
+#     predictor <- paste0("^Predictor:")
+#     predictor_names <- grep(predictor, latent_row_names, value = TRUE)
+#     predictor_samples <- samps_Z[[i]]$latent[predictor_names, , drop = FALSE]
+#     samples_tot <- length(predictor_samples)
+#
+#
+#     total_latent_var <- 0
+#     if (length(random)>1){
+#       for (j in 2:length(random)){
+#         pattern <- paste0("^", random[j], ":")
+#         random_names <- grep(pattern, latent_row_names, value = TRUE)
+#         random_samples <- samps_Z[[i]]$latent[random_names, , drop = FALSE]
+#         samples_tot <- samples_tot + length(random_samples)
+#         random_mat[i, j] <- var(random_samples)
+#
+#         total_latent_var <- total_latent_var + var(random_samples)
+#       }
+#     }else{
+#       if (i==n_samp){
+#         print("No random effects, only resiudal variance")
+#       }
+#
+#     }
+#
+#     if (fam == "binomial"){
+#       if (link == "probit"){
+#         distribution_var <- 1
+#       } else if (link == "logit"){
+#         distribution_var <- pi^2/3
+#
+#         # I think this could be difficult to implement. Ask Steffi.
+#
+#         #intercept <- samps_Z[[i]]$latent[output_length-length(fixed)]
+#         #fixed_contribution <- as.matrix(data[, fixed]) %*% samps_Z[[i]]$latent[(samples_tot+2):output_length]
+#
+#         #distribution_var <- inv.logit(intercept + fixed_contribution - 0.5*total_latent_var * tanh(((intercept+)*(1+2exp(-0.5*total_latent_var)))/6))
+#       }
+#     }else if (fam == "poisson"){
+#       if (link == "log"){
+#         intercept <- samps_Z[[i]]$latent[output_length-length(fixed)]
+#         lambda_pois <- exp(intercept + 0.5*total_latent_var)
+#         distribution_var <- log(1 + 1/lambda_pois)
+#       }else if (link == "root"){
+#         distribution_var <- 0.25
+#       }
+#     }
+#
+#     random_mat[i, 1] <- distribution_var
+#
+#     beta <- samps_Z[[i]]$latent[(samples_tot+2):output_length]  #Skip intercept
+#     beta_mat[i, ] <- beta
+#     importance_mat[i, ] <- lambda^2 %*% beta^2
+#   }
+#
+#   rowsum <- rowSums(random_mat) + rowSums(importance_mat)
+#   scaled_random_mat <- random_mat/rowsum
+#   scaled_beta_mat <- beta_mat/rowsum
+#   scaled_importance_mat <- importance_mat/rowsum
+#
+#   R2_mat <- rowSums(importance_mat) / (rowSums(importance_mat) + rowSums(random_mat))
+#
+#   if (length(random)>2){
+#     R2_cond <- (rowSums(importance_mat) + rowSums(random_mat[, -1])) / (rowSums(importance_mat) + rowSums(random_mat))
+#   }else if (length(random)==2){
+#     R2_cond <- (rowSums(importance_mat) + random_mat[, -1] ) / (rowSums(importance_mat) + rowSums(random_mat))
+#   }else{
+#     R2_cond <- rowSums(importance_mat)  / (rowSums(importance_mat) + rowSums(random_mat))
+#   }
+#
+#   beta_mat <- as.data.frame(beta_mat)
+#   names(beta_mat) <- fixed
+#   importance_mat <- as.data.frame(importance_mat)
+#   names(importance_mat) <- fixed
+#   scaled_beta_mat <- as.data.frame(scaled_beta_mat)
+#   names(scaled_beta_mat) <- fixed
+#   scaled_importance_mat <- as.data.frame(scaled_importance_mat)
+#   names(scaled_importance_mat) <- fixed
+#
+#   random_mat <- as.data.frame(random_mat)
+#   names(random_mat) <- random
+#   scaled_random_mat <- as.data.frame(scaled_random_mat)
+#   names(scaled_random_mat) <- random
+#
+#   R2_mat <- as.data.frame(R2_mat)
+#   names(R2_mat) <- "Marginal R2"
+#   R2_cond <- as.data.frame(R2_cond)
+#   names(R2_cond) <- "Conditional R2"
+#
+#   if (!is.null(additive_param) && repeatability){
+#     repeat_mat <- random_mat[, additive_param]/(rowSums(random_mat))
+#     repeat_mat <- as.data.frame(repeat_mat)
+#     names(repeat_mat) <- paste0("Repeatability of: ", additive_param)
+#   }
+#
+#   return(list(beta_samples = beta_mat,
+#               importance_samples = importance_mat,
+#               scaled_beta_samples = scaled_beta_mat,
+#               scaled_importance_samples = scaled_importance_mat,
+#               random_samples = random_mat,
+#               scaled_random_samples = scaled_random_mat,
+#               R2_marginal = R2_mat,
+#               R2_conditional = R2_cond,
+#               var_y = var_pred_mat,
+#               repeatability = repeat_mat))
+# }
 
 
 #' Plot Samples from Posterior Distributions
@@ -643,77 +643,77 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
 #' # Assuming 'samples' contains results from `sample_posterior`
 #' plots <- plot_samples(samples)
 #' @export
-plot_samples <- function(samples) {
-  plots <- list() # Initialize an empty list to store plots
-
-  # Check and plot scaled importance for fixed effects
-  if (!is.null(samples$scaled_importance_samples) && dim(samples$scaled_importance_samples)[2] > 0) {
-    melted_scaled_importance <- melt(as.data.frame(samples$scaled_importance_samples))
-    fixed_effects_plot <- ggplot(melted_scaled_importance, aes(x = value)) +
-      geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.5) +
-      geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
-      labs(title = "Fixed Effects", x = "Relative Importance", y = "Frequency") +
-      theme_minimal() +
-      theme(text = element_text(family="LM Roman 10"),
-            plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
-      facet_wrap(~ variable, scales = "free")
-    plots$fixed_effects <- fixed_effects_plot
-  }
-
-  # Check and plot scaled importance for random effects
-  if (!is.null(samples$scaled_random_samples)) {
-    melted_scaled_random <- melt(as.data.frame(samples$scaled_random_samples))
-    random_effects_plot <- ggplot(melted_scaled_random, aes(x = value)) +
-      geom_histogram(aes(y = ..density..), fill = "#C6F7CD", alpha = 0.5) +
-      geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
-      labs(title = "Random Effects", x = "Relative Importance", y = "Frequency") +
-      theme_minimal() +
-      theme(text = element_text(family="LM Roman 10"),
-            plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
-      facet_wrap(~ variable, scales = "free")
-    plots$random_effects <- random_effects_plot
-  }
-
-  # Adjusted handling for heritability if it has values and not all are NA
-  if (!is.null(samples$heritability) && any(!is.na(samples$heritability))) {
-    # Extract the actual column name for heritability
-    heritability_colname <- names(samples$heritability)
-    heritability_plot <- ggplot(samples$heritability, aes(x = !!sym(heritability_colname))) +
-      geom_histogram(aes(y = ..density..), fill = "purple", alpha = 0.5) +
-      geom_density(color = "purple", adjust = 1.5, linewidth=1.5) +
-      labs(title = paste("Heritability of:", heritability_colname), x = heritability_colname, y = "Frequency") +
-      theme_minimal() +
-      theme(text = element_text(family="LM Roman 10"),
-            plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
-      plots$heritability <- heritability_plot
-  }
-
-  if (!is.null(samples$R2_marginal) && !is.null(samples$R2_conditional)) {
-    # Combine R2_marginal and R2_conditional into a single data frame
-    R2_data <- data.frame(R2_marginal = samples$R2_marginal$`Marginal R2`,
-                          R2_conditional = samples$R2_conditional$`Conditional R2`)
-
-    # Convert from wide to long format
-    R2_long <- pivot_longer(R2_data, cols = c(R2_marginal, R2_conditional), names_to = "Type", values_to = "Value")
-
-    R2_long$Type <- factor(R2_long$Type, levels = c("R2_marginal", "R2_conditional"))
-
-    # Plot
-    R2_plot <- ggplot(R2_long, aes(x = Value, fill = Type)) +
-      geom_histogram(aes(y = ..density..), alpha = 0.5, position = "identity") +
-      geom_density(colour = "#E6C6DF", alpha = 0.75, adjust = 1.5, linewidth=1.5) +
-      labs(title = "Marginal and Conditional R2", x = "R2 estimate", y = "Frequency") +
-      scale_fill_manual(values = c("R2_marginal" = "#C6CDF7", "R2_conditional" = "#C6F7CD")) +
-      theme_minimal() +
-      theme(text = element_text(family="LM Roman 10"),
-            plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
-      facet_wrap(~ Type, scales = "free")
-
-    plots$R2 <- R2_plot
-  }
-
-  return(plots)
-}
+# plot_samples <- function(samples) {
+#   plots <- list() # Initialize an empty list to store plots
+#
+#   # Check and plot scaled importance for fixed effects
+#   if (!is.null(samples$scaled_importance_samples) && dim(samples$scaled_importance_samples)[2] > 0) {
+#     melted_scaled_importance <- melt(as.data.frame(samples$scaled_importance_samples))
+#     fixed_effects_plot <- ggplot(melted_scaled_importance, aes(x = value)) +
+#       geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.5) +
+#       geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
+#       labs(title = "Fixed Effects", x = "Relative Importance", y = "Frequency") +
+#       theme_minimal() +
+#       theme(text = element_text(family="LM Roman 10"),
+#             plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
+#       facet_wrap(~ variable, scales = "free")
+#     plots$fixed_effects <- fixed_effects_plot
+#   }
+#
+#   # Check and plot scaled importance for random effects
+#   if (!is.null(samples$scaled_random_samples)) {
+#     melted_scaled_random <- melt(as.data.frame(samples$scaled_random_samples))
+#     random_effects_plot <- ggplot(melted_scaled_random, aes(x = value)) +
+#       geom_histogram(aes(y = ..density..), fill = "#C6F7CD", alpha = 0.5) +
+#       geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
+#       labs(title = "Random Effects", x = "Relative Importance", y = "Frequency") +
+#       theme_minimal() +
+#       theme(text = element_text(family="LM Roman 10"),
+#             plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
+#       facet_wrap(~ variable, scales = "free")
+#     plots$random_effects <- random_effects_plot
+#   }
+#
+#   # Adjusted handling for heritability if it has values and not all are NA
+#   if (!is.null(samples$heritability) && any(!is.na(samples$heritability))) {
+#     # Extract the actual column name for heritability
+#     heritability_colname <- names(samples$heritability)
+#     heritability_plot <- ggplot(samples$heritability, aes(x = !!sym(heritability_colname))) +
+#       geom_histogram(aes(y = ..density..), fill = "purple", alpha = 0.5) +
+#       geom_density(color = "purple", adjust = 1.5, linewidth=1.5) +
+#       labs(title = paste("Heritability of:", heritability_colname), x = heritability_colname, y = "Frequency") +
+#       theme_minimal() +
+#       theme(text = element_text(family="LM Roman 10"),
+#             plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
+#       plots$heritability <- heritability_plot
+#   }
+#
+#   if (!is.null(samples$R2_marginal) && !is.null(samples$R2_conditional)) {
+#     # Combine R2_marginal and R2_conditional into a single data frame
+#     R2_data <- data.frame(R2_marginal = samples$R2_marginal$`Marginal R2`,
+#                           R2_conditional = samples$R2_conditional$`Conditional R2`)
+#
+#     # Convert from wide to long format
+#     R2_long <- pivot_longer(R2_data, cols = c(R2_marginal, R2_conditional), names_to = "Type", values_to = "Value")
+#
+#     R2_long$Type <- factor(R2_long$Type, levels = c("R2_marginal", "R2_conditional"))
+#
+#     # Plot
+#     R2_plot <- ggplot(R2_long, aes(x = Value, fill = Type)) +
+#       geom_histogram(aes(y = ..density..), alpha = 0.5, position = "identity") +
+#       geom_density(colour = "#E6C6DF", alpha = 0.75, adjust = 1.5, linewidth=1.5) +
+#       labs(title = "Marginal and Conditional R2", x = "R2 estimate", y = "Frequency") +
+#       scale_fill_manual(values = c("R2_marginal" = "#C6CDF7", "R2_conditional" = "#C6F7CD")) +
+#       theme_minimal() +
+#       theme(text = element_text(family="LM Roman 10"),
+#             plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
+#       facet_wrap(~ Type, scales = "free")
+#
+#     plots$R2 <- R2_plot
+#   }
+#
+#   return(plots)
+# }
 
 
 #' Plot Posterior Distributions of Variance Components and Heritability
@@ -727,56 +727,56 @@ plot_samples <- function(samples) {
 #' # Assuming 'result' is an inla model object
 #' plots <- plot_posteriors_and_heritability(result, random_effect_name = "group")
 #' @export
-plot_posteriors_and_heritability <- function(model, random_effect_name = NULL) {
-  # Calculate marginals for variance components
-  variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
-
-  # Create data frames for plotting
-  df_list <- lapply(names(variance_marginals_list), function(effect_name) {
-    data.frame(
-      x = variance_marginals_list[[effect_name]][, 1],
-      y = variance_marginals_list[[effect_name]][, 2],
-      Effect = effect_name
-    )
-  })
-  df_combined <- do.call(rbind, df_list)
-
-  df_combined$Effect <- gsub("Precision for ", "", df_combined$Effect, fixed = TRUE)
-
-  # Plot posterior distributions
-  p1 <- ggplot(df_combined, aes(x = x, y = y, color = Effect)) +
-    geom_line() +
-    labs(title = "Posterior Distributions of Variance Components",
-         x = "Variance", y = "Density") +
-    theme_minimal() +
-    theme(legend.position = "right")
-
-  # Plot heritability if random effect name is provided and correctly calculate heritability
-  if (!is.null(random_effect_name) && random_effect_name %in% names(variance_marginals_list)) {
-    # Calculate heritability distribution
-    names <- names(model$marginals.hyperpar)
-    total <- rep(0, length(variance_marginals_list[[random_effect_name]]))
-    for (name in names){
-      total <- total + variance_marginals_list[[name]][, 1]
-    }
-
-    heritability <- variance_marginals_list[[random_effect_name]][, 1]/total
-
-    heritability_density <- variance_marginals_list[[random_effect_name]][ ,2]
-
-    df_heritability <- data.frame(Heritability = heritability, Density = heritability_density)
-
-    p2 <- ggplot(df_heritability, aes(x = Heritability, y = Density)) +
-      geom_line() +
-      labs(title = paste("Heritability Distribution for", random_effect_name),
-           x = "Heritability", y = "Density") +
-      theme_minimal()
-  } else {
-    p2 <- NULL
-  }
-
-
-  return(list(variance_plot = p1, heritability_plot = p2))
-}
+# plot_posteriors_and_heritability <- function(model, random_effect_name = NULL) {
+#   # Calculate marginals for variance components
+#   variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
+#
+#   # Create data frames for plotting
+#   df_list <- lapply(names(variance_marginals_list), function(effect_name) {
+#     data.frame(
+#       x = variance_marginals_list[[effect_name]][, 1],
+#       y = variance_marginals_list[[effect_name]][, 2],
+#       Effect = effect_name
+#     )
+#   })
+#   df_combined <- do.call(rbind, df_list)
+#
+#   df_combined$Effect <- gsub("Precision for ", "", df_combined$Effect, fixed = TRUE)
+#
+#   # Plot posterior distributions
+#   p1 <- ggplot(df_combined, aes(x = x, y = y, color = Effect)) +
+#     geom_line() +
+#     labs(title = "Posterior Distributions of Variance Components",
+#          x = "Variance", y = "Density") +
+#     theme_minimal() +
+#     theme(legend.position = "right")
+#
+#   # Plot heritability if random effect name is provided and correctly calculate heritability
+#   if (!is.null(random_effect_name) && random_effect_name %in% names(variance_marginals_list)) {
+#     # Calculate heritability distribution
+#     names <- names(model$marginals.hyperpar)
+#     total <- rep(0, length(variance_marginals_list[[random_effect_name]]))
+#     for (name in names){
+#       total <- total + variance_marginals_list[[name]][, 1]
+#     }
+#
+#     heritability <- variance_marginals_list[[random_effect_name]][, 1]/total
+#
+#     heritability_density <- variance_marginals_list[[random_effect_name]][ ,2]
+#
+#     df_heritability <- data.frame(Heritability = heritability, Density = heritability_density)
+#
+#     p2 <- ggplot(df_heritability, aes(x = Heritability, y = Density)) +
+#       geom_line() +
+#       labs(title = paste("Heritability Distribution for", random_effect_name),
+#            x = "Heritability", y = "Density") +
+#       theme_minimal()
+#   } else {
+#     p2 <- NULL
+#   }
+#
+#
+#   return(list(variance_plot = p1, heritability_plot = p2))
+# }
 
 
