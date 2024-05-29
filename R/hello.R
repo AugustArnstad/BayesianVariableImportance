@@ -652,9 +652,11 @@ plot_samples <- function(samples) {
     fixed_effects_plot <- ggplot(melted_scaled_importance, aes(x = value)) +
       geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.5) +
       geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
-      labs(title = "Relative Importance of Fixed Effects", x = "Relative importance", y = "Frequency") +
+      labs(title = "Fixed Effects", x = "Relative Importance", y = "Frequency") +
       theme_minimal() +
-      facet_wrap(~ variable, scales = "free_x")
+      theme(text = element_text(family="LM Roman 10"),
+            plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
+      facet_wrap(~ variable, scales = "free")
     plots$fixed_effects <- fixed_effects_plot
   }
 
@@ -664,9 +666,11 @@ plot_samples <- function(samples) {
     random_effects_plot <- ggplot(melted_scaled_random, aes(x = value)) +
       geom_histogram(aes(y = ..density..), fill = "#C6F7CD", alpha = 0.5) +
       geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
-      labs(title = "Relative Importance of Random Effects", x = "Relative importance", y = "Frequency") +
+      labs(title = "Random Effects", x = "Relative Importance", y = "Frequency") +
       theme_minimal() +
-      facet_wrap(~ variable, scales = "free_x")
+      theme(text = element_text(family="LM Roman 10"),
+            plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
+      facet_wrap(~ variable, scales = "free")
     plots$random_effects <- random_effects_plot
   }
 
@@ -678,9 +682,10 @@ plot_samples <- function(samples) {
       geom_histogram(aes(y = ..density..), fill = "purple", alpha = 0.5) +
       geom_density(color = "purple", adjust = 1.5, linewidth=1.5) +
       labs(title = paste("Heritability of:", heritability_colname), x = heritability_colname, y = "Frequency") +
-      theme_minimal()
-
-    plots$heritability <- heritability_plot
+      theme_minimal() +
+      theme(text = element_text(family="LM Roman 10"),
+            plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
+      plots$heritability <- heritability_plot
   }
 
   if (!is.null(samples$R2_marginal) && !is.null(samples$R2_conditional)) {
@@ -700,7 +705,9 @@ plot_samples <- function(samples) {
       labs(title = "Marginal and Conditional R2", x = "R2 estimate", y = "Frequency") +
       scale_fill_manual(values = c("R2_marginal" = "#C6CDF7", "R2_conditional" = "#C6F7CD")) +
       theme_minimal() +
-      facet_wrap(~ Type, scales = "free_x")
+      theme(text = element_text(family="LM Roman 10"),
+            plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
+      facet_wrap(~ Type, scales = "free")
 
     plots$R2 <- R2_plot
   }
