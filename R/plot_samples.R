@@ -20,8 +20,8 @@ plot_samples <- function(samples) {
       geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
       labs(title = "Fixed Effects", x = "Relative Importance", y = "Frequency") +
       theme_minimal() +
-      theme(text = element_text(family="LM Roman 10"),
-            plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
+      # theme(text = element_text(family="LM Roman 10"),
+      #       plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
       facet_wrap(~ variable, scales = "free")
     plots$fixed_effects <- fixed_effects_plot
   }
@@ -34,8 +34,8 @@ plot_samples <- function(samples) {
       geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
       labs(title = "Random Effects", x = "Relative Importance", y = "Frequency") +
       theme_minimal() +
-      theme(text = element_text(family="LM Roman 10"),
-            plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
+      # theme(text = element_text(family="LM Roman 10"),
+      #       plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
       facet_wrap(~ variable, scales = "free")
     plots$random_effects <- random_effects_plot
   }
@@ -49,8 +49,8 @@ plot_samples <- function(samples) {
       geom_density(color = "purple", adjust = 1.5, linewidth=1.5) +
       labs(title = paste("Heritability of:", heritability_colname), x = heritability_colname, y = "Frequency") +
       theme_minimal() +
-      theme(text = element_text(family="LM Roman 10"),
-            plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
+      # theme(text = element_text(family="LM Roman 10"),
+      #       plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
       plots$heritability <- heritability_plot
   }
 
@@ -71,8 +71,8 @@ plot_samples <- function(samples) {
       labs(title = "Marginal and Conditional R2", x = "R2 estimate", y = "Frequency") +
       scale_fill_manual(values = c("R2_marginal" = "#C6CDF7", "R2_conditional" = "#C6F7CD")) +
       theme_minimal() +
-      theme(text = element_text(family="LM Roman 10"),
-            plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
+      # theme(text = element_text(family="LM Roman 10"),
+      #       plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
       facet_wrap(~ Type, scales = "free")
 
     plots$R2 <- R2_plot

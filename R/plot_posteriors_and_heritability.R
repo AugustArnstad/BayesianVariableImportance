@@ -30,10 +30,10 @@ plot_posteriors_and_heritability <- function(model, random_effect_name = NULL) {
     geom_line() +
     labs(title = "Posterior Marginal Distributions of Variance Components",
          x = "Variance", y = "Density") +
-    theme_minimal() +
-    theme(text = element_text(family="LM Roman 10"),
-          plot.title = element_text(hjust = 0.5),
-          legend.position = "right")
+    theme_minimal() #+
+    # theme(text = element_text(family="LM Roman 10"),
+    #       plot.title = element_text(hjust = 0.5),
+    #       legend.position = "right")
 
   # Plot heritability if random effect name is provided and correctly calculate heritability
   if (!is.null(random_effect_name) && random_effect_name %in% names(variance_marginals_list)) {
@@ -54,10 +54,10 @@ plot_posteriors_and_heritability <- function(model, random_effect_name = NULL) {
       geom_line() +
       labs(title = paste("Heritability Distribution for", random_effect_name),
            x = "Heritability", y = "Density") +
-      theme_minimal() +
-      theme(text = element_text(family="LM Roman 10"),
-            plot.title = element_text(hjust = 0.5),
-            legend.position = "right")
+      theme_minimal() #+
+      # theme(text = element_text(family="LM Roman 10"),
+      #       plot.title = element_text(hjust = 0.5),
+      #       legend.position = "right")
   } else {
     p2 <- NULL
   }

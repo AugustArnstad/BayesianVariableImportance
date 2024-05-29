@@ -3,10 +3,10 @@
 
 
 # Ensure the INLA package is loaded
-if (!requireNamespace("INLA", quietly = TRUE)) {
-  install.packages("INLA", repos = c(INLA = "https://inla.r-inla-download.org/R/stable"), type = "source")
-}
-library(INLA)
+# if (!requireNamespace("INLA", quietly = TRUE)) {
+#   install.packages("INLA", repos = c(INLA = "https://inla.r-inla-download.org/R/stable"), type = "source")
+# }
+# library(INLA)
 
 
 

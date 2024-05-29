@@ -278,7 +278,8 @@ timing_result_mass <- microbenchmark(
 print(timing_result_mass)
 
 plots_mass <- BayesianVariableImportance::plot_samples(samples_mass)
-
+plots_mass$fixed_effects
+BayesianVariableImportance::plot_posteriors_and_heritability(model_mass)
 ```
 
 ```{r, echo = FALSE, eval = FALSE}
