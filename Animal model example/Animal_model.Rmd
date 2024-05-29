@@ -45,23 +45,48 @@ library(microbenchmark)
 ```{r}
 # Access the stored models and samples if you just want to see the results. 
 # The code with the original data used in the thesis is found further down below.
+# These are samples with the CCD integration, but grid integration is also in the folder
 
 setwd("/your/desired/path/BayesianVariableImportance/Animal model example")
+setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/BayesianVariableImportance/Animal model example")
+model_mass <- readRDS("Models and samples/model_mass_ccd_24.05.rds")
+samples_mass <- readRDS("Models and samples/samples_mass_ccd_24.05.rds")
 
-model_mass <- readRDS("Models and samples/model_mass_10.05.rds")
-samples_mass <- readRDS("Models and samples/samples_mass_10.05.rds")
+model_wing <- readRDS("Models and samples/model_wing_ccd_24.05.rds")
+samples_wing <- readRDS("Models and samples/samples_wing_ccd_24.05.rds")
 
-model_wing <- readRDS("Models and samples/model_wing_10.05.rds")
-samples_wing <- readRDS("Models and samples/samples_wing_10.05.rds")
+model_tarsus <- readRDS("Models and samples/model_tarsus_ccd_24.05.rds")
+samples_tarsus <- readRDS("Models and samples/samples_tarsus_ccd_24.05.rds")
+```
 
-model_tarsus <- readRDS("Models and samples/model_tarsus_10.05.rds")
-samples_tarsus <- readRDS("Models and samples/samples_tarsus_10.05.rds")
+```{r}
+plots_mass <- BayesianVariableImportance::plot_samples(samples_mass)
+plots_wing <- BayesianVariableImportance::plot_samples(samples_wing)
+plots_tarsus <- BayesianVariableImportance::plot_samples(samples_tarsus)
+
+```
+
+```{r, echo = FALSE, eval = FALSE}
+plots_mass$fixed_effects
+plots_mass$random_effects
+plots_mass$heritability
+plots_mass$R2
+
+plots_wing$fixed_effects
+plots_wing$random_effects
+plots_wing$heritability
+plots_wing$R2
+
+plots_tarsus$fixed_effects
+plots_tarsus$random_effects
+plots_tarsus$heritability
+plots_tarsus$R2
 ```
 
 
 
 
-# Custom plots for use in thesis.
+# Custom plots heritability for use in thesis.
 # In general, I think I should pick a colour palette that is the same for the whole thesis.
 ```{r}
 str(samples_mass)
@@ -271,7 +296,7 @@ prior_wing = list(theta = list(initial=log(0.5),  prior="pc.prec",param=c(sqrt(2
 
 timing_result_wing <- microbenchmark(
   {
-    model_wing <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.wing, "gaussian", priors = prior_wing)
+    model_wing <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.wing, "gaussian", int_strat="ccd", priors = prior_wing)
 
     samples_wing <- BayesianVariableImportance::sample_posterior_gaussian(model_wing, formula.wing, d.morph, n_samp=10000, additive_param = "IDC2")
   },
@@ -324,14 +349,14 @@ dim(d.morph)
 # Saving the entire loaded_sim_no$successes object as an RDS file
 setwd("/your/desired/path/Animal model results")
 
-saveRDS(model_mass, "model_mass_10.05.rds")
-saveRDS(samples_mass, "samples_mass_10.05.rds")
+saveRDS(model_mass, "model_mass_XX.XX.rds")
+saveRDS(samples_mass, "samples_mass_XX.XX.rds")
 
-saveRDS(model_wing, "model_wing_10.05.rds")
-saveRDS(samples_wing, "samples_wing_10.05.rds")
+saveRDS(model_wing, "model_wing_XX.XX.rds")
+saveRDS(samples_wing, "samples_wing_XX.XX.rds")
 
-saveRDS(model_tarsus, "model_tarsus_10.05.rds")
-saveRDS(samples_tarsus, "samples_tarsus_10.05.rds")
+saveRDS(model_tarsus, "model_tarsus_XX.XX.rds")
+saveRDS(samples_tarsus, "samples_tarsus_XX.XX.rds")
 ```
 
 
