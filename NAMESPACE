@@ -1,12 +1,12 @@
-exportPattern("^[[:alpha:]]+")
+#exportPattern("^[[:alpha:]]+")
 
 # Exported functions
 export(perform_inla_analysis)
 export(sample_posterior_gaussian)
 export(sample_posterior_count)
-export(SVD_decomp)
+#export(SVD_decomp)
 export(plot_posteriors_and_heritability)
-export(extract_effects)
+#export(extract_effects)
 export(extract_importances)
 export(plot_samples)
 

@@ -18,6 +18,8 @@
 #' @export
 perform_inla_analysis <- function(data, formula, family, link_func="identity", inla_strat="simplified.laplace", int_strat = "auto", priors = NULL) {
 
+  install_inla()
+
   data_copy <- data
 
   response <- all.vars(formula)[1]

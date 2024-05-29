@@ -47,8 +47,8 @@ library(Matrix)
 # The code with the original data used in the thesis is found further down below.
 # These are samples with the CCD integration, but grid integration is also in the folder
 
-setwd("/your/desired/path/BayesianVariableImportance/Animal model example")
-setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/BayesianVariableImportance/Animal model example")
+setwd("/your/desired/path/BayesianVariableImportance/Vignettes/Animal model example")
+
 model_mass <- readRDS("Models and samples/model_mass_ccd_24.05.rds")
 samples_mass <- readRDS("Models and samples/samples_mass_ccd_24.05.rds")
 
@@ -270,7 +270,7 @@ timing_result_mass <- microbenchmark(
   {
     model_mass <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.mass, "gaussian", int_strat="ccd", priors = prior_mass)
 
-    samples_mass <- BayesianVariableImportance::sample_posterior_gaussian(model_mass, formula.mass, d.morph, n_samp=10000, additive_param = "IDC2")
+    samples_mass <- BayesianVariableImportance::sample_posterior_gaussian(model_mass, formula.mass, d.morph, n_samp=100, additive_param = "IDC2")
   },
   times = 1  # Number of times to run the chunk for better accuracy
 )
