@@ -37,6 +37,17 @@ library(BayesianVariableImportance)
 library(INLA)
 library(MASS)
 library(dplyr)
+library(rptR)
+library(ggplot2)
+library(gridExtra)
+library(latex2exp)
+library(scales)
+library(pacman)
+pacman::p_load(devtools)
+pacman::p_load(ggplot2)
+pacman::p_load(latex2exp)
+library(patchwork)
+library(ggtext)
 ```
 
 ## Simulation study
@@ -229,7 +240,6 @@ datasets_high_neg <- simulate_data(covariance_level = -0.4)
 
 
 
-library(rptR)
 rptR_logit_no <- rptBinary(y_logit_bin ~ X1 + X2 + X3 + (1 | Z1), grname =  
     c("Fixed", "Z1"), data = datasets_no$binomial_logit, nboot = 100, npermut = 0, link="logit", adjusted = FALSE)
 rptR_pois_no <- rptPoisson(y_pois ~ X1 + X2 + X3 + (1 | Z1), grname =  
@@ -488,16 +498,6 @@ print(paste("Number of failed logit simulations:", num_failures_pois_high_neg))
 
 
 ```{r}
-library(ggplot2)
-library(dplyr)
-library(gridExtra)
-library(latex2exp)
-library(scales)
-library(pacman)
-pacman::p_load(devtools)
-pacman::p_load(ggplot2)
-pacman::p_load(latex2exp)
-
 
 # Combine all successful datasets into one data frame for Logit and Poisson
 # Here, using bind_rows from dplyr to merge data frames with an identifier
@@ -571,15 +571,6 @@ random_logit_plot
 
 
 ```{r}
-library(ggplot2)
-library(dplyr)
-library(gridExtra)
-library(latex2exp)
-library(scales)
-library(pacman)
-pacman::p_load(devtools)
-pacman::p_load(ggplot2)
-pacman::p_load(latex2exp)
 
 
 # Combine all successful datasets into one data frame for Logit and Poisson
@@ -653,9 +644,6 @@ random_poisson_plot
 
 
 ```{r}
-library(ggplot2)
-library(dplyr)
-library(patchwork)
 
 plot_fixed_importances <- function(data, model_name, cov_level=0) {
   # Create a list to collect data frames for each fixed effect
@@ -791,7 +779,6 @@ logit_high_neg
 if (!requireNamespace("gridExtra", quietly = TRUE)) {
   install.packages("gridExtra")
 }
-library(gridExtra)
 
 remove_x_axis_label <- function(p) {
   p + theme(axis.title.x = element_blank(),
@@ -925,8 +912,6 @@ variance_explained
 
 
 ```{r}
-library(ggtext)
-library(dplyr)
 
 # Function to plot R-squared values including Stoffel points
 plot_r2_correlation_level_with_stoffel <- function(data, model_name, correlation_label, correlation_color, stoffel_values) {

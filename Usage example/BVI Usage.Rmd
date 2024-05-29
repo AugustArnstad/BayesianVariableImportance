@@ -31,6 +31,14 @@ knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 68),
                       fig.width=7, 
                       fig.height=5, 
                       fig.align="center")
+library(remotes)
+library(INLA)
+library(mnormt)
+library(ggplot2)
+library(reshape2)
+library(RColorBrewer)
+library(tidyr)
+library(dplyr)
 ```
 
 ## INSTALLING THE PACKAGE
@@ -46,14 +54,6 @@ library(BayesianVariableImportance)
 In this part, we simulate data to demonstrate the functionality of the BayesianVariableImportance package. We generate random variables used as fixed effects with different correlation structures and random effects. Note that the coefficients used here are a bit large for the Poisson model, consider lowering them. The data is then structured into data frames for further analysis. If you have a suitable dataset you can use this instead.
 
 ```{r}
-library(remotes)
-library(INLA)
-library(mnormt)
-library(ggplot2)
-library(reshape2)
-library(RColorBrewer)
-library(tidyr)
-library(dplyr)
 
 set.seed(1)
 

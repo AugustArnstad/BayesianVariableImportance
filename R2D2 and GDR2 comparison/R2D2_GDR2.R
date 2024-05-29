@@ -10,6 +10,10 @@ library(INLA)
 library(relaimpo)
 library(rstan)
 library(MASS)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
 
 
 rinvgauss_new <- function(n, mean = 1, shape = NULL, dispersion = 1) {
@@ -418,11 +422,7 @@ relaimpo_high_pos <- booteval.relimp(relaimpo_high_pos)
 
 
 # Importance plots ----------------------------------------------------------------
-# Load necessary libraries
-library(ggplot2)
-library(dplyr)
-library(tidyr)
-library(relaimpo)
+
 
 # Define a function to extract data from the fits. Note that we scale the R2D2 and GDR2 results by the true R2 for comparison.
 extract_r2d2_results <- function(fit, rho) {
@@ -527,11 +527,6 @@ r2d2_bvi_boxplot
 
 
 # R2 plots ---------------------------------------------------------------
-# Load necessary libraries
-library(ggplot2)
-library(dplyr)
-library(tidyr)
-library(relaimpo)
 
 # Extract R2 values from LMG results
 extract_lmg_r2 <- function(lmg_boot, method_name, correlation) {

@@ -35,6 +35,13 @@ if(!require(devtools)) install.packages("devtools")
 devtools::install_github("AugustArnstad/BayesianVariableImportance")
 library(BayesianVariableImportance)
 library(microbenchmark)
+library(rptR)
+library(INLA)
+library(ggplot2)
+library(reshape2)
+library(tidyr)
+library(mvtnorm)
+library(dplyr)
 ```
 
 # Comparison of the rptR method and BayesianVariableImportance
@@ -48,12 +55,6 @@ Stoffel, M. A., Nakagawa, S., & Schielzeth, H. (2017). rptR: repeatability estim
 
 ```{r}
 set.seed(1)
-library(rptR)
-library(INLA)
-library(ggplot2)
-library(reshape2)
-library(tidyr)
-library(mvtnorm)
 
 data(BeetlesFemale)
 
@@ -167,7 +168,6 @@ print(timing_result_bin)
 ```
 
 ```{r}
-library(dplyr)
 # heritability_data_poisson <- pois_glm_samples$heritability %>%
 #   rename(Heritability = `Heritability of: Population`)
 
@@ -201,7 +201,6 @@ stoffel_heritability_poisson
 ```
 
 ```{r}
-library(dplyr)
 
 heritability_data_gauss_1 <- gauss_1_glm_samples$scaled_random_samples
 
@@ -226,7 +225,7 @@ stoffel_heritability_gauss_1
 ```
 
 ```{r}
-library(dplyr)
+
 heritability_data_gauss_2 <- gauss_2_glm_samples$scaled_random_samples
 
 # Create the ggplot histogram with a density overlay
@@ -251,7 +250,7 @@ heritability_gauss_2
 
 
 ```{r}
-library(dplyr)
+
 
 heritability_data_binomial <- bin_glm_samples$scaled_random_samples
 

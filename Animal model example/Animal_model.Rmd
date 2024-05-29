@@ -37,7 +37,7 @@ library(BayesianVariableImportance)
 library(ggplot2)
 library(INLA)
 library(microbenchmark)
-
+library(Matrix)
 ```
 
 ## This code contains the models fitted and samples drawn, without needing to access the data:
@@ -211,7 +211,6 @@ data("d.morph")
 data("Cmatrix")
 
 str(d.morph)
-library(Matrix)
 isSymmetric(Cmatrix)
 ```
 

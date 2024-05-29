@@ -1,5 +1,5 @@
 # BayesianVariableImportance
-**Bayesian Variable Importance for GLMMs using INLA** is a package developed for my masters thesis at NTNU. It is a further developement and extension of the previous package BayesianImportance, available in full at https://github.com/AugustArnstad/BayesianImportance.
+**Bayesian Variable Importance for GLMMs using INLA** is a package developed for my master's thesis at NTNU. It is a further development and extension of the previous package BayesianImportance, available in full at https://github.com/AugustArnstad/BayesianImportance.
 
 `BayesianVariableImportance` is an R package designed to compute Bayesian variable importance metrics for Generalized Linear Mixed Models (GLMMs) utilizing the Integrated Nested Laplace Approximation (INLA) methodology.
 
@@ -16,34 +16,64 @@ To install the latest version of `BayesianVariableImportance` from GitHub you ne
 install.packages("INLA", repos = c(getOption("repos"), INLA = "https://inla.r-inla-download.org/R/stable"), dep = TRUE)
 
 # If not already installed, install the 'devtools' package
-if(!require(devtools)) install.packages("devtools")
+if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
+
 # Install BayesianVariableImportance from GitHub
 devtools::install_github("AugustArnstad/BayesianVariableImportance")
+``` 
+To load all other packages needed to use the BVI method to its full extent, use the following command:
+
+```R
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+
+pacman::p_load(
+    Matrix, ggplot2, reshape2, MASS, dplyr, tidyr,
+    gridExtra, latex2exp, scales, patchwork, ggtext, mnormt,
+    formatR, knitr, devtools, remotes, microbenchmark, 
+    rstan, MCMCpack, relaimpo, rptR
+)
 ``` 
 
 ## Usage
 ```R
-# Create a model using the INLA formula syntax, deciding on a prior if necessary. Specify correlation structure of random effects in the formula
-# as is standard for INLA models.
+# Create a model using the INLA formula syntax, deciding on a prior if necessary. 
+# Specify correlation structure of random effects in the formula as is standard for INLA models.
 glmm_pois <- y_pois ~ X1 + X2 + X3 + f(Z1, model="iid", hyper=list(prec = list(
         prior = "pc.prec",
         param = c(1, 0.01),
         initial = log(1)
-      ))
+      )
+   )
 )
-model_pois <- BayesianVariableImportance::perform_inla_analysis(datasets$poisson, glmm_pois, family = "poisson", link_func = "log")
+
+model_pois <- BayesianVariableImportance::perform_inla_analysis(
+    data = datasets$poisson, 
+    formula = glmm_pois, 
+    family = "poisson", 
+    link_func = "log"
+)
 
 # Extract some summary statistics from the fitted model.
-imp_pois <- BayesianVariableImportance::extract_importances(model_pois, 
-                                datasets$poisson,
-                                random_names=c("Z1"), 
-                                fixed_names=c("X1", "X2", "X3"))
+imp_pois <- BayesianVariableImportance::extract_importances(
+    model = model_pois, 
+    data = datasets$poisson
+)
 
 
-# Compute the variable importance metrics by sampling from the joint posterior. Specify the additive parameter, which represents the additive 
-# variance component and what scale to compute repeatability on (see Kruuk - Estimating genetic parameters in natural populations using the ‘animal model’ (2004) and
+# Compute the variable importance metrics by sampling from the joint posterior. 
+# Specify the additive parameter, which represents the additive variance component for computing ICC/Readbility/heritability
+# and what scale to compute heritability/repeatability on (see Kruuk - Estimating genetic parameters in natural populations using the ‘animal model’ (2004) and
 # Stoffel - rptR: repeatability estimation and variance decomposition by generalized linear mixed-effects models for explanations).
-samples_pois <- BayesianVariableImportance::sample_posterior_count(model_pois, glmm_pois, datasets$poisson, n_samp=5000, additive_param = "Z1", repeatability = FALSE)
+# Note that the additive_param is optional, and not necessary for the computation of the variable importance metrics.
+
+samples_pois <- BayesianVariableImportance::sample_posterior_count(
+    model = model_pois, 
+    formula = glmm_pois, 
+    data = datasets$poisson, 
+    n_samp=5000, 
+    additive_param = "Z1", 
+    repeatability = FALSE
+)
 
 # Plot the variable importance metrics
 plots_pois <- BayesianVariableImportance::plot_samples(samples_pois)
@@ -58,7 +88,7 @@ A full simulation study, which has been described, reported and discussed in my 
 A case study, following the vignette of the `rptR` package, which has been described, reported and discussed in my master thesis, can be found in the file Stoffel_comparison.Rmd
 
 ## Real data analysis
-A study on the heritability of phenotypic traits in house sparrows is conducted in the file Animal_model.Rmd. The data is not licensed by me to put on Github, but it has been descirbed in the masters thesis, with references to more information.
+A study on the heritability of phenotypic traits in house sparrows is conducted in the file Animal_model.Rmd. The data is not licensed by me to put on Github, but it has been described in the master's thesis, with references to more information.
 
 ## Documentation
 Further documentation and function references can be found within the package. Use the standard R help and documentation commands to access detailed information about each function.
@@ -71,4 +101,4 @@ This project is licensed under the MIT License - see the LICENSE.txt file for de
 
 ## Acknowledgements
 INLA team for their outstanding work on the INLA methodology and R package.
-My counsellor Stefanie Muff, Associate Professor, Department of Mathematical Sciences, NTNU Trondheim
+My counsellor Stefanie Muff, Associate Professor, Department of Mathematical Sciences, NTNU Trondheim.

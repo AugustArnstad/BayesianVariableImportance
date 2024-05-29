@@ -11,8 +11,29 @@ LazyData: true
 Depends:
     R (>= 3.5.0)
 Imports: 
-    INLA,
+    dplyr,
     ggplot2,
+    ggtext,
+    gridExtra,
+    MASS,
+    Matrix,
+    mnormt,
+    mvtnorm,
+    latex2exp,
+    patchwork,
     reshape2,
+    scales,
     tidyr
+Suggests:
+    devtools,
+    formatR,
+    INLA,
+    knitr,
+    MCMCpack,
+    microbenchmark,
+    pacman,
+    relaimpo,
+    remotes,
+    rptR,
+    rstan
 RoxygenNote: 7.3.1
