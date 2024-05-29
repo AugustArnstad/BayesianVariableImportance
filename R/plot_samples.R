@@ -18,7 +18,7 @@ plot_samples <- function(samples) {
     fixed_effects_plot <- ggplot(melted_scaled_importance, aes(x = value)) +
       #geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.5) +
       geom_histogram(fill = "#C6CDF7", alpha = 0.5) +
-      geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
+      geom_density(colour = "#E6C6DF", adjust = 1, linewidth=1.5) +
       labs(title = "Fixed Effects", x = "Relative Importance", y = "Frequency") +
       theme_minimal() +
       # theme(text = element_text(family="LM Roman 10"),
