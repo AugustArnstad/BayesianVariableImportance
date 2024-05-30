@@ -78,17 +78,12 @@ poisson_formula <- Egg ~ Treatment+ f(Container, model="iid", hyper=list(prec = 
         initial = log(1)
       ))) 
 
-timing_result_pois <- microbenchmark(
-  {
-    model_pois_glm <- BayesianVariableImportance::perform_inla_analysis(data_pois, poisson_formula, family = "poisson", link_func = "log")
 
-    pois_glm_samples <- BayesianVariableImportance::sample_posterior_count(model_pois_glm, poisson_formula, data_pois, n_samp=1000, additive_param = "Population")
-  },
-  times = 1  # Number of times to run the chunk for better accuracy
-)
+model_pois_glm <- BayesianVariableImportance::perform_inla_analysis(data_pois, poisson_formula, family = "poisson", link_func = "log")
 
-print(timing_result_pois)
+pois_glm_samples <- BayesianVariableImportance::sample_posterior_count(model_pois_glm, poisson_formula, data_pois, n_samp=1000, additive_param = "Population")
 
+plot_pois_importances <- BayesianVariableImportance::plot_samples(pois_glm_samples)
 ```
 
 
@@ -110,6 +105,7 @@ model_gauss_glm <- BayesianVariableImportance::perform_inla_analysis(data_gauss,
 
 gauss_1_glm_samples <- BayesianVariableImportance::sample_posterior_gaussian(model_gauss_glm, gauss_formula, data_gauss, n_samp=1000, additive_param = "Population")
 
+plot_gauss_1_importances <- BayesianVariableImportance::plot_samples(gauss_1_glm_samples)
 ```
 
 ## Compare Gaussian with multiple random effects (vignette, rep3)
@@ -127,6 +123,7 @@ model_gauss_glm_multiple <- BayesianVariableImportance::perform_inla_analysis(da
 
 gauss_2_glm_samples <- BayesianVariableImportance::sample_posterior_gaussian(model_gauss_glm_multiple, gauss_formula_multiple, data_gauss, n_samp=1000, additive_param = "Container")
 
+plot_gauss_2_importances <- BayesianVariableImportance::plot_samples(gauss_2_glm_samples)
 ```
 
 ## Compare Binary regression (vignette, rep10)
@@ -153,18 +150,11 @@ bin_formula <- Colour ~ Treatment + f(Container, model="iid", hyper=list(prec = 
         initial = log(1)
       )))  #f(Container, model="iid") + f(Population, model="iid")
 
-timing_result_bin <- microbenchmark(
-  {
-    model_bin_glm <- BayesianVariableImportance::perform_inla_analysis(data_bin, bin_formula, family = "binomial", link_func = "logit")
+model_bin_glm <- BayesianVariableImportance::perform_inla_analysis(data_bin, bin_formula, family = "binomial", link_func = "logit")
 
-    bin_glm_samples <- BayesianVariableImportance::sample_posterior_count(model_bin_glm, bin_formula, data_bin, n_samp=1000, additive_param = "Population")
-  },
-  times = 1  # Number of times to run the chunk for better accuracy
-)
+bin_glm_samples <- BayesianVariableImportance::sample_posterior_count(model_bin_glm, bin_formula, data_bin, n_samp=1000, additive_param = "Population")
 
-
-print(timing_result_bin)
-
+plot_bin_importances <- BayesianVariableImportance::plot_samples(bin_glm_samples)
 ```
 
 ```{r}

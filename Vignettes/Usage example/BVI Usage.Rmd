@@ -79,7 +79,7 @@ simulate_data <- function(n = 10000, n_groups = 100, covariance_level=0) {
   beta3 <- sqrt(3)
 
   # Linear predictor
-  eta <- beta1*X1 + beta2*X2 + beta3*X3 + random_effect_contributions_z1 #+ random_effect_contributions_z2 
+  eta <- beta1*X1 + beta2*X2 + beta3*X3 + random_effect_contributions_z1 
 
   # Binomial with logit link
   p_logit <- exp(eta) / (1 + exp(eta))
@@ -161,9 +161,9 @@ imp_pois_2 <- BayesianVariableImportance::extract_importances(model_pois,
 imp_lmm <- BayesianVariableImportance::extract_importances(model_normal, datasets$normal)
 
 
-samples_logit <- BayesianVariableImportance::sample_posterior_count(model_logit, glmm_logit, datasets$binomial_logit, n_samp=5000, additive_param = "Z1")
-samples_pois <- BayesianVariableImportance::sample_posterior_count(model_pois, glmm_pois, datasets$poisson, n_samp=5000, additive_param = "Z1")
-samples_lmm <- BayesianVariableImportance::sample_posterior_gaussian(model_normal, lmm, datasets$normal, n_samp=5000, additive_param = "Z1")
+samples_logit <- BayesianVariableImportance::sample_posterior_count(model_logit, glmm_logit, datasets$binomial_logit, n_samp=5, additive_param = "Z1")
+samples_pois <- BayesianVariableImportance::sample_posterior_count(model_pois, glmm_pois, datasets$poisson, n_samp=5, additive_param = "Z1")
+samples_lmm <- BayesianVariableImportance::sample_posterior_gaussian(model_normal, lmm, datasets$normal, n_samp=5, additive_param = "Z1")
 
 plots_logit <- BayesianVariableImportance::plot_samples(samples_logit)
 plots_pois <- BayesianVariableImportance::plot_samples(samples_pois)
@@ -207,10 +207,10 @@ Cutsomizing plots is often very nice to display information in the way you want 
 random <- "Z1"
 
 random_plot <- ggplot(samples_pois$scaled_random_samples, aes(x = !!sym(random))) +
-  geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
+  geom_histogram(aes(y = after_stat(density)), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
   geom_density(color = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
   geom_point(aes(x = mean(samples_pois$scaled_random_samples$Z1), y = 0), color = "#E6C6DF", size = 4) +
-  labs(#title = paste("Heritability of mass"),
+  labs(
        x = "Samples of relative importance of random effect",
        y = "Frequency") +
   theme_minimal() +
@@ -231,7 +231,7 @@ data_long <- samples_pois$scaled_importance_samples %>%
 
 # Updated plot code
 fixed_plot <- ggplot(data_long, aes(x = Value)) +
-  geom_histogram(aes(y = ..density..), fill = "#C6CDF7", alpha = 0.7, bins = 40, color = "black") +
+  geom_histogram(aes(y = after_stat(density)), fill = "#C6CDF7", alpha = 0.7, color = "black") +
   geom_density(color = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
   facet_wrap(~ Variable, scales = "free_x") +
   labs(x = "Samples of relative importance of random effect",
@@ -242,6 +242,8 @@ fixed_plot <- ggplot(data_long, aes(x = Value)) +
         axis.title.y = element_text(size = 24),
         axis.text.x = element_text(size = 24),
         axis.text.y = element_text(size = 24))
+
+
 
 # Print the plot
 fixed_plot
@@ -257,7 +259,7 @@ r2_long <- pivot_longer(r2_data, cols = c(Marginal_R2, Conditional_R2),
 
 # Create the plot
 r2_plot <- ggplot(r2_long, aes(x = Value, fill = R2_Type)) +
-  geom_histogram(aes(y = ..density..), alpha = 0.7, bins = 40, color = "black") +
+  geom_histogram(aes(y = after_stat(density)), alpha = 0.7, bins = 40, color = "black") +
   geom_density(adjust = 1.5, color = "black", alpha = 0.7) +
   labs(x = "R2 Values", y = "Density") +
   scale_fill_manual(values = c("Marginal_R2" = "#C6CDF7", "Conditional_R2" = "#E6C6DF")) +

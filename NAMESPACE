@@ -6,6 +6,7 @@ export(plot_posteriors_and_heritability)
 export(extract_importances)
 export(plot_samples)
 export(SVD_decomp)
+export(install_inla)
 
 
 # Imported functions
