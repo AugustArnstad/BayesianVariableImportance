@@ -91,6 +91,7 @@ A study on the heritability of phenotypic traits in house sparrows is conducted 
 
 ### Simulation study
 A full simulation study, which has been described, reported and discussed in my master thesis, can be found in the file Simulation study.Rmd
+See also `BayesianImportance` for a simulation study on Gaussian LMMs.
 
 ### Case studies
 A case study, following the vignette of the `rptR` package, which has been described, reported and discussed in my master thesis, can be found in the file Stoffel_comparison.Rmd
