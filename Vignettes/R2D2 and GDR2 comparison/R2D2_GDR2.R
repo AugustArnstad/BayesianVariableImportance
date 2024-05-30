@@ -15,6 +15,10 @@ library(dplyr)
 library(tidyr)
 
 
+## Please note that this example was created with the help of the R2D2 package from the Github repository of Yandora Zhang.
+## Please note that this example was created with the help of the Stan files https://osf.io/ns2cv/, by Paul Bürkner and Javier Romero.
+## The Stan files are used in this example and must be downloaded.
+
 
 rinvgauss_new <- function(n, mean = 1, shape = NULL, dispersion = 1) {
   if (length(n) > 1)

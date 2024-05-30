@@ -86,8 +86,7 @@ plots_tarsus$R2
 
 
 
-# Custom plots heritability for use in thesis.
-# In general, I think I should pick a colour palette that is the same for the whole thesis.
+# Custom plots of the heritability as used in the master's thesis.
 ```{r}
 str(samples_mass)
 
@@ -266,16 +265,9 @@ formula.wing = wing ~ sex + FGRM + month + age + outer + other +
 set.seed(1)
 prior_mass = list(theta = list(initial=log(0.5),  prior="pc.prec",param=c(sqrt(2),0.05)))
 
-timing_result_mass <- microbenchmark(
-  {
-    model_mass <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.mass, "gaussian", int_strat="ccd", priors = prior_mass)
+model_mass <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.mass, "gaussian", int_strat="ccd", priors = prior_mass)
 
-    samples_mass <- BayesianVariableImportance::sample_posterior_gaussian(model_mass, formula.mass, d.morph, n_samp=10000, additive_param = "IDC2")
-  },
-  times = 1  # Number of times to run the chunk for better accuracy
-)
-
-print(timing_result_mass)
+samples_mass <- BayesianVariableImportance::sample_posterior_gaussian(model_mass, formula.mass, d.morph, n_samp=10000, additive_param = "IDC2")
 
 plots_mass <- BayesianVariableImportance::plot_samples(samples_mass)
 
@@ -294,17 +286,9 @@ set.seed(1)
 prior_wing = list(theta = list(initial=log(0.5),  prior="pc.prec",param=c(sqrt(2),0.05)))
 #prior_wing = list(theta = list(initial=log(1),  prior="pc.prec",param=c(sqrt(2),0.05)))
 
-timing_result_wing <- microbenchmark(
-  {
-    model_wing <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.wing, "gaussian", int_strat="ccd", priors = prior_wing)
+model_wing <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.wing, "gaussian", int_strat="ccd", priors = prior_wing)
 
-    samples_wing <- BayesianVariableImportance::sample_posterior_gaussian(model_wing, formula.wing, d.morph, n_samp=10000, additive_param = "IDC2")
-  },
-  times = 1  # Number of times to run the chunk for better accuracy
-)
-
-print(timing_result_wing)
-
+samples_wing <- BayesianVariableImportance::sample_posterior_gaussian(model_wing, formula.wing, d.morph, n_samp=10000, additive_param = "IDC2")
 
 plots_wing <- BayesianVariableImportance::plot_samples(samples_wing)
 ```
@@ -320,17 +304,9 @@ plots_wing$R2
 set.seed(1)
 prior_tarsus = list(theta = list(initial=log(0.5),  prior="pc.prec",param=c(sqrt(2),0.05)))
 
-timing_result_tarsus <- microbenchmark(
-  {
-      model_tarsus <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.tarsus, "gaussian", int_strat="ccd", priors = prior_tarsus)
+model_tarsus <- BayesianVariableImportance::perform_inla_analysis(d.morph, formula.tarsus, "gaussian", int_strat="ccd", priors = prior_tarsus)
 
-      samples_tarsus <- BayesianVariableImportance::sample_posterior_gaussian(model_tarsus, formula.tarsus, d.morph, n_samp=10000, additive_param = "IDC2")
-  },
-  times = 1  # Number of times to run the chunk for better accuracy
-)
-
-print(timing_result_tarsus)
-
+samples_tarsus <- BayesianVariableImportance::sample_posterior_gaussian(model_tarsus, formula.tarsus, d.morph, n_samp=10000, additive_param = "IDC2")
 
 plots_tarsus <- BayesianVariableImportance::plot_samples(samples_tarsus)
 ```
