@@ -8,7 +8,7 @@
 - **INLA Integration**: Leverages the computational advantages of INLA, a popular method for Bayesian inference for latent Gaussian models.
 - **Priors**: INLAs penalizing complexity priors are used as defaults, but others can be specified if desirable.
 - **Extensible**: Designed with the modern R user in mind, offering a range of utilities to further expand upon the base functionality.
-- **Usage examples**: In the package, we showcase a simulation study, a case study comparing it to the `rptR` package and analysis on real data gathered from house sparrows on Helgelandskysten, Norway.
+- **Usage examples**: In the package, we showcase a usage example, simulation study, analysis on real data gathered from house sparrows on Helgelandskysten, Norway, a case study comparing it to the `rptR` package and a comparison with Bayesian shrinkage priors methods.
 
 ## Installation
 To install the latest version of `BayesianVariableImportance` from GitHub you need INLA. You can therefore use the following command:
@@ -99,7 +99,6 @@ A case study, following the vignette of the `rptR` package, which has been descr
 ### Comparing the BVI method to the Dirichlet and Generalized Decomposition priors on $R^2$
 A comparison of the BVI method to the Dirichlet and Generalized Decomposition priors on $R^2$ can be found in the R2D2_GDR2.R file. The R2D2 and GDR2 methods decompose the $R^2$ value, and in that sense can be seen as variable importance methods. However, they were not originally intended to be. Nonetheless, we have used the methods in such a way that the output is analogous to the BVI method. Please read the method, results and discussion part of my masters thesis for more details and references to the original papers.
 
-
 ## Documentation
 Further documentation and function references can be found within the package. Use the standard R help and documentation commands to access detailed information about each function.
 
@@ -112,3 +111,6 @@ This project is licensed under the MIT License - see the LICENSE.txt file for de
 ## Acknowledgements
 INLA team for their outstanding work on the INLA methodology and R package.
 My counsellor Stefanie Muff, Associate Professor, Department of Mathematical Sciences, NTNU Trondheim.
+
+## Contact
+For questions, suggestions, or any other inquiries, please contact me at augustarnstad@gmail.com
