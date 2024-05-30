@@ -38,6 +38,7 @@ pacman::p_load(
 ```R
 # Create a model using the INLA formula syntax, deciding on a prior if necessary. 
 # Specify correlation structure of random effects in the formula as is standard for INLA models.
+
 glmm_pois <- y_pois ~ X1 + X2 + X3 + f(Z1, model="iid", hyper=list(prec = list(
         prior = "pc.prec",
         param = c(1, 0.01),
@@ -53,7 +54,8 @@ model_pois <- BayesianVariableImportance::perform_inla_analysis(
     link_func = "log"
 )
 
-# Extract some summary statistics from the fitted model.
+# Extract the posterior mean importances for each variable. Note that sampling is adviced!
+
 imp_pois <- BayesianVariableImportance::extract_importances(
     model = model_pois, 
     data = datasets$poisson
@@ -79,16 +81,23 @@ samples_pois <- BayesianVariableImportance::sample_posterior_count(
 plots_pois <- BayesianVariableImportance::plot_samples(samples_pois)
 ``` 
 
-A worked example for simulated data can be found in the BVI Usage.Rmd file.
+## Vignettes
 
-## Simulation study
+### Usage example
+A worked example on relative variable importance calculations for simulated data can be found in the BVI Usage.Rmd file.
+
+### Real data analysis
+A study on the heritability of phenotypic traits in house sparrows is conducted in the file Animal_model.Rmd. Please read the method, results and discussion part of my masters thesis for a full description of the study.
+
+### Simulation study
 A full simulation study, which has been described, reported and discussed in my master thesis, can be found in the file Simulation study.Rmd
 
-## Case studies
+### Case studies
 A case study, following the vignette of the `rptR` package, which has been described, reported and discussed in my master thesis, can be found in the file Stoffel_comparison.Rmd
 
-## Real data analysis
-A study on the heritability of phenotypic traits in house sparrows is conducted in the file Animal_model.Rmd. Please read the method, results and discussion part of my masters thesis for a full description of the study.
+### Comparing the BVI method to the Dirichlet and Generalized Decomposition priors on $R^2$
+A comparison of the BVI method to the Dirichlet and Generalized Decomposition priors on $R^2$ can be found in the R2D2_GDR2.R file. The R2D2 and GDR2 methods decompose the $R^2$ value, and in that sense can be seen as variable importance methods. However, they were not originally intended to be. Nonetheless, we have used the methods in such a way that the output is analogous to the BVI method. Please read the method, results and discussion part of my masters thesis for more details and references to the original papers.
+
 
 ## Documentation
 Further documentation and function references can be found within the package. Use the standard R help and documentation commands to access detailed information about each function.
