@@ -161,9 +161,9 @@ imp_pois_2 <- BayesianVariableImportance::extract_importances(model_pois,
 imp_lmm <- BayesianVariableImportance::extract_importances(model_normal, datasets$normal)
 
 
-samples_logit <- BayesianVariableImportance::sample_posterior_count(model_logit, glmm_logit, datasets$binomial_logit, n_samp=5, additive_param = "Z1")
-samples_pois <- BayesianVariableImportance::sample_posterior_count(model_pois, glmm_pois, datasets$poisson, n_samp=5, additive_param = "Z1")
-samples_lmm <- BayesianVariableImportance::sample_posterior_gaussian(model_normal, lmm, datasets$normal, n_samp=5, additive_param = "Z1")
+samples_logit <- BayesianVariableImportance::sample_posterior_count(model_logit, glmm_logit, datasets$binomial_logit, n_samp=5000, additive_param = "Z1")
+samples_pois <- BayesianVariableImportance::sample_posterior_count(model_pois, glmm_pois, datasets$poisson, n_samp=5000, additive_param = "Z1")
+samples_lmm <- BayesianVariableImportance::sample_posterior_gaussian(model_normal, lmm, datasets$normal, n_samp=5000, additive_param = "Z1")
 
 plots_logit <- BayesianVariableImportance::plot_samples(samples_logit)
 plots_pois <- BayesianVariableImportance::plot_samples(samples_pois)
