@@ -75,7 +75,6 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
     predictor_samples <- samps_Z[[i]]$latent[predictor_names, , drop = FALSE]
     samples_tot <- length(predictor_samples)
 
-    total_latent_var <- sum(importance_mat[i, ])
     if (length(random)>1){
       for (j in 2:length(random)){
         pattern <- paste0("^", random[j], ":")
@@ -96,6 +95,7 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
     beta <- samps_Z[[i]]$latent[(samples_tot+2):output_length]  #Skip intercept
     beta_mat[i, ] <- beta
     importance_mat[i, ] <- lambda^2 %*% beta^2
+    total_latent_var <- sum(importance_mat[i, ])
 
     if (fam == "binomial"){
       if (link == "probit"){
