@@ -68,6 +68,7 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
   not_na = which(!is.na(data[response]))
 
   for (i in 1:n_samp){
+    total_latent_var <- 0
     # Extract all sampled values, separate them by covariate/predictor, and assign them to the sampled matrix
     samples_length <- 0
     predictor <- paste0("^Predictor:")
@@ -83,7 +84,7 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
         samples_tot <- samples_tot + length(random_samples)
         random_mat[i, j] <- var(random_samples)
 
-        total_latent_var <- total_latent_var + var(random_samples)
+        total_latent_var <- var(random_samples)
       }
     }else{
       if (i==n_samp){
@@ -95,7 +96,7 @@ sample_posterior_count <- function(model, formula, data, n_samp=1000, additive_p
     beta <- samps_Z[[i]]$latent[(samples_tot+2):output_length]  #Skip intercept
     beta_mat[i, ] <- beta
     importance_mat[i, ] <- lambda^2 %*% beta^2
-    total_latent_var <- sum(importance_mat[i, ])
+    total_latent_var <- sum(importance_mat[i, ]) + total_latent_var
 
     if (fam == "binomial"){
       if (link == "probit"){
