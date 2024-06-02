@@ -430,7 +430,7 @@ relaimpo_high_pos <- booteval.relimp(relaimpo_high_pos)
 
 # Define a function to extract data from the fits. Note that we scale the R2D2 and GDR2 results by the true R2 for comparison.
 extract_r2d2_results <- function(fit, rho) {
-  phi = fit$phi*6/7
+  phi = fit$phi
   phi_samples <- as.data.frame(fit$phi)
   colnames(phi_samples) <- c("X1", "X2", "X3")
   phi_samples <- phi_samples %>%
@@ -449,7 +449,7 @@ extract_bvi_results <- function(bvi_sample, rho) {
 }
 
 extract_gdr_results <- function(gdr_sample, rho) {
-  gdr_sample <- gdr_sample*6/7
+  gdr_sample <- gdr_sample
   gdr_samples <- as.data.frame(gdr_sample)
   colnames(gdr_samples) <- c("X1", "X2", "X3")
   gdr_samples <- gdr_samples %>%

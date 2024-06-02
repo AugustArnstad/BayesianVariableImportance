@@ -210,21 +210,21 @@ sims_count
 ```{r}
 # Saving the entire loaded_sim_no$successes object as an RDS file
 setwd("/path/to/your/desired/folder")
-saveRDS(sim_no, "simulation_no_corr_04.05.rds")
-saveRDS(sim_low_pos, "simulation_low_pos_corr_04.05.rds")
-saveRDS(sim_low_neg, "simulation_low_neg_corr_04.05.rds")
-saveRDS(sim_high_pos, "simulation_high_pos_corr_04.05.rds")
-saveRDS(sim_high_neg, "simulation_high_neg_corr_04.05.rds")
+saveRDS(sim_no, "simulation_no_corr_XX.XX.rds")
+saveRDS(sim_low_pos, "simulation_low_pos_corr_XX.XX.rds")
+saveRDS(sim_low_neg, "simulation_low_neg_corr_XX.XX.rds")
+saveRDS(sim_high_pos, "simulation_high_pos_corr_XX.XX.rds")
+saveRDS(sim_high_neg, "simulation_high_neg_corr_XX.XX.rds")
 ```
 
 ```{r}
 # To load this file back into R:
 setwd("/path/to/your/desired/folder")
-loaded_sim_no <- readRDS("simulation_no_corr_04.05.rds")
-loaded_sim_low_pos <- readRDS("simulation_low_pos_corr_04.05.rds")
-loaded_sim_low_neg <- readRDS("simulation_low_neg_corr_04.05.rds")
-loaded_sim_high_pos <- readRDS("simulation_high_pos_corr_04.05.rds")
-loaded_sim_high_neg <- readRDS("simulation_high_neg_corr_04.05.rds")
+loaded_sim_no <- readRDS("simulation_no_corr_XX.XX.rds")
+loaded_sim_low_pos <- readRDS("simulation_low_pos_corr_XX.XX.rds")
+loaded_sim_low_neg <- readRDS("simulation_low_neg_corr_XX.XX.rds")
+loaded_sim_high_pos <- readRDS("simulation_high_pos_corr_XX.XX.rds")
+loaded_sim_high_neg <- readRDS("simulation_high_neg_corr_XX.XX.rds")
 
 ```
 
@@ -277,38 +277,38 @@ rptR_pois_high_neg <- rptPoisson(y_pois ~ X1 + X2 + X3 + (1 | Z1), grname =
 
 ```{r}
 setwd("/path/to/your/desired/folder")
-saveRDS(rptR_logit_no, "stoffel_sim_logit_no_corr_05.05.rds")
-saveRDS(rptR_pois_no, "stoffel_sim_pois_no_corr_05.05.rds")
+saveRDS(rptR_logit_no, "stoffel_sim_logit_no_corr_XX.XX.rds")
+saveRDS(rptR_pois_no, "stoffel_sim_pois_no_corr_XX.XX.rds")
 
-saveRDS(rptR_logit_low_pos, "stoffel_sim_logit_low_pos_corr_05.05.rds")
-saveRDS(rptR_pois_low_pos, "stoffel_sim_pois_low_pos_corr_05.05.rds")
+saveRDS(rptR_logit_low_pos, "stoffel_sim_logit_low_pos_corr_XX.XX.rds")
+saveRDS(rptR_pois_low_pos, "stoffel_sim_pois_low_pos_corr_XX.XX.rds")
 
-saveRDS(rptR_logit_low_neg, "stoffel_sim_logit_low_neg_corr_05.05.rds")
-saveRDS(rptR_pois_low_neg, "stoffel_sim_pois_low_neg_corr_05.05.rds")
+saveRDS(rptR_logit_low_neg, "stoffel_sim_logit_low_neg_corr_XX.XX.rds")
+saveRDS(rptR_pois_low_neg, "stoffel_sim_pois_low_neg_corr_XX.XX.rds")
 
-saveRDS(rptR_logit_high_pos, "stoffel_sim_logit_high_pos_corr_05.05.rds")
-saveRDS(rptR_pois_high_pos, "stoffel_sim_pois_high_pos_corr_05.05.rds")
+saveRDS(rptR_logit_high_pos, "stoffel_sim_logit_high_pos_corr_XX.XX.rds")
+saveRDS(rptR_pois_high_pos, "stoffel_sim_pois_high_pos_corr_XX.XX.rds")
 
-saveRDS(rptR_logit_high_neg, "stoffel_sim_logit_high_neg_corr_05.05.rds")
-saveRDS(rptR_pois_high_neg, "stoffel_sim_pois_high_neg_corr_05.05.rds")
+saveRDS(rptR_logit_high_neg, "stoffel_sim_logit_high_neg_corr_XX.XX.rds")
+saveRDS(rptR_pois_high_neg, "stoffel_sim_pois_high_neg_corr_XX.XX.rds")
 ```
 
 ```{r}
 setwd("/path/to/your/desired/folder")
-rptR_logit_no <- readRDS("stoffel_sim_logit_no_corr_05.05.rds")
-rptR_pois_no <- readRDS("stoffel_sim_pois_no_corr_05.05.rds")
+rptR_logit_no <- readRDS("stoffel_sim_logit_no_corr_XX.XX.rds")
+rptR_pois_no <- readRDS("stoffel_sim_pois_no_corr_XX.XX.rds")
 
-rptR_logit_low_pos <- readRDS("stoffel_sim_logit_low_pos_corr_05.05.rds")
-rptR_pois_low_pos <- readRDS("stoffel_sim_pois_low_pos_corr_05.05.rds")
+rptR_logit_low_pos <- readRDS("stoffel_sim_logit_low_pos_corr_XX.XX.rds")
+rptR_pois_low_pos <- readRDS("stoffel_sim_pois_low_pos_corr_XX.XX.rds")
 
-rptR_logit_low_neg <- readRDS("stoffel_sim_logit_low_neg_corr_05.05.rds")
-rptR_pois_low_neg <- readRDS("stoffel_sim_pois_low_neg_corr_05.05.rds")
+rptR_logit_low_neg <- readRDS("stoffel_sim_logit_low_neg_corr_XX.XX.rds")
+rptR_pois_low_neg <- readRDS("stoffel_sim_pois_low_neg_corr_XX.XX.rds")
 
-rptR_logit_high_pos <- readRDS("stoffel_sim_logit_high_pos_corr_05.05.rds")
-rptR_pois_high_pos <- readRDS("stoffel_sim_pois_high_pos_corr_05.05.rds")
+rptR_logit_high_pos <- readRDS("stoffel_sim_logit_high_pos_corr_XX.XX.rds")
+rptR_pois_high_pos <- readRDS("stoffel_sim_pois_high_pos_corr_XX.XX.rds")
 
-rptR_logit_high_neg <- readRDS("stoffel_sim_logit_high_neg_corr_05.05.rds")
-rptR_pois_high_neg <- readRDS("stoffel_sim_pois_high_neg_corr_05.05.rds")
+rptR_logit_high_neg <- readRDS("stoffel_sim_logit_high_neg_corr_XX.XX.rds")
+rptR_pois_high_neg <- readRDS("stoffel_sim_pois_high_neg_corr_XX.XX.rds")
 ```
 
 

@@ -15,7 +15,7 @@ editor_options:
 ---
 
 ## GENERAL SETUP
-First, we set up the necessary libraries and configure the environment for our analysis. This includes loading essential packages and setting options for chunk output and plot dimensions."
+First, we set up the necessary libraries and configure the environment for our analysis. This includes loading essential packages and setting options for chunk output and plot dimensions.
 
 ```{r setup, input=FALSE, echo=FALSE}
 library(formatR)
