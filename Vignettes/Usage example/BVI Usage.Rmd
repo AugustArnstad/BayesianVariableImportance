@@ -261,6 +261,7 @@ r2_long <- pivot_longer(r2_data, cols = c(Marginal_R2, Conditional_R2),
 r2_plot <- ggplot(r2_long, aes(x = Value, fill = R2_Type)) +
   geom_histogram(aes(y = after_stat(density)), alpha = 0.7, bins = 40, color = "black") +
   geom_density(adjust = 1.5, color = "black", alpha = 0.7) +
+  facet_wrap(~ R2_Type, scales = "free_x") +
   labs(x = "R2 Values", y = "Density") +
   scale_fill_manual(values = c("Marginal_R2" = "#C6CDF7", "Conditional_R2" = "#E6C6DF")) +
   theme_minimal() +

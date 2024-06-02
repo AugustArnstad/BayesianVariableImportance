@@ -196,7 +196,7 @@ heritability_data_gauss_1 <- gauss_1_glm_samples$scaled_random_samples
 
 # Create the ggplot histogram with a density overlay
 heritability_gauss_1 <- ggplot(heritability_data_gauss_1, aes(x = Population)) +
-  geom_histogram(aes(y = ..density..), fill = "#C6CDF7", bins = 30, alpha = 0.7) +
+  geom_histogram(aes(y = ..density..), fill = "#C6CDF7", bins = 30, alpha = 0.7, color = "black") +
   geom_density(color = "#E6A0C4", adjust = 1.5, linewidth = 1) +
   geom_vline(aes(xintercept = stoffel_heritability_gauss_1), color = "orange", linetype = "dashed", size = 1) +
   labs(#title = "Distribution of Heritability of Population", 
@@ -219,7 +219,7 @@ stoffel_heritability_gauss_1
 heritability_data_gauss_2 <- gauss_2_glm_samples$scaled_random_samples
 
 # Create the ggplot histogram with a density overlay
-heritability_gauss_2 <- ggplot(heritability_data_gauss_2, aes(x = Population)) +
+heritability_gauss_2 <- ggplot(heritability_data_gauss_2, aes(x = Container)) +
   geom_histogram(aes(y = ..density..), fill = "#C6CDF7", bins = 30, alpha = 0.7, color = "black") +
   geom_density(color = "#E6A0C4", adjust = 1.5, linewidth = 1) +
   geom_vline(aes(xintercept = stoffel_heritability_gauss_2), color = "orange", linetype = "dashed", size = 1) +
