@@ -20,7 +20,7 @@ plot_samples <- function(samples) {
       geom_histogram(aes(y = after_stat(density)), fill = "#C6CDF7", alpha = 0.5) +
       #stat_density(geom = 'line', colour = "#E6C6DF", adjust=1.5, linewidth =1.5) +
       geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
-      labs(title = "Fixed Effects", x = "Relative Importance", y = "Frequency") +
+      labs(title = "Fixed Effects", x = "Relative Importance", y = "Density") +
       theme_minimal() +
       # theme(text = element_text(family="LM Roman 10"),
       #       plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
@@ -36,7 +36,7 @@ plot_samples <- function(samples) {
       geom_histogram(aes(y = after_stat(density)), fill = "#C6F7CD", alpha = 0.5) +
       #stat_density(geom = 'line', colour = "#E6C6DF", adjust=1.5, linewidth =1.5) +
       geom_density(colour = "#E6C6DF", adjust = 1.5, linewidth=1.5) +
-      labs(title = "Random Effects", x = "Relative Importance", y = "Frequency") +
+      labs(title = "Random Effects", x = "Relative Importance", y = "Density") +
       theme_minimal() +
       # theme(text = element_text(family="LM Roman 10"),
       #       plot.title = element_text(size = 18, hjust = 0.5, face="bold")) +
@@ -76,7 +76,7 @@ plot_samples <- function(samples) {
       geom_histogram(aes(y = after_stat(density)), alpha = 0.5, position = "identity") +
       #stat_density(geom = 'line', colour = "#E6C6DF", adjust=1.5, linewidth =1.5) +
       geom_density(colour = "#E6C6DF", alpha = 0.75, adjust = 1.5, linewidth=1.5) +
-      labs(title = "Marginal and Conditional R2", x = "R2 estimate", y = "Frequency") +
+      labs(title = "Marginal and Conditional R2", x = "R2 estimate", y = "Density") +
       scale_fill_manual(values = c("R2_marginal" = "#C6CDF7", "R2_conditional" = "#C6F7CD")) +
       theme_minimal() +
       # theme(text = element_text(family="LM Roman 10"),
